@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Signature Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #faf8f5;
+            --bg-secondary: #ffffff;
+            --text-primary: #2a2520;
+            --text-muted: #7a6f65;
+            --accent: #d97757;
+            --border: #e8e3db;
+            --shadow: rgba(42, 37, 32, 0.08);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1816;
+            --bg-secondary: #242220;
+            --text-primary: #f5f1eb;
+            --text-muted: #a39a8f;
+            --accent: #e89b7e;
+            --border: #3a3632;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--text-primary);
+        }
+
+        .form-section {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 12px var(--shadow);
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.1);
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-wrapper:hover .clear-btn,
+        .clear-btn.visible {
+            opacity: 1;
+        }
+
+        .clear-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .preview-section {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 12px var(--shadow);
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-header h2 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .preview-content {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .signature-preview {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.875rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c86847;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(217, 119, 87, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 8px 32px var(--shadow);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            width: auto;
+            padding: 0;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal h2 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal h3 {
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent);
+        }
+
+        .modal ol {
+            margin-left: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .modal li {
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 16px var(--shadow);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .form-section,
+            .preview-section {
+                padding: 1.5rem;
+            }
+
+            .theme-toggle {
+                top: 1rem;
+                right: 1rem;
+                width: 40px;
+                height: 40px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Email Signature Generator</h1>
+            <p class="subtitle">Create a professional signature for your email</p>
+        </header>
+
+        <div class="form-section">
+            <div class="form-grid">
+                <div class="input-group">
+                    <label for="name">Name</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="name" placeholder="Jane Smith">
+                        <button class="clear-btn" data-input="name">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 4L4 12M4 4l8 8"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="title">Job Title</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="title" placeholder="Senior Product Designer">
+                        <button class="clear-btn" data-input="title">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 4L4 12M4 4l8 8"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="phone">Phone Number</label>
+                    <div class="input-wrapper">
+                        <input type="tel" id="phone" placeholder="+1 (555) 123-4567">
+                        <button class="clear-btn" data-input="phone">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 4L4 12M4 4l8 8"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="twitter">Twitter/X Handle</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="twitter" placeholder="@yourhandle">
+                        <button class="clear-btn" data-input="twitter">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 4L4 12M4 4l8 8"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <div class="preview-header">
+                <h2>Preview</h2>
+            </div>
+            <div class="preview-content">
+                <div class="signature-preview" id="signaturePreview">
+                    <!-- Signature will be generated here -->
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" id="copyBtn">Copy Signature</button>
+                <button class="btn-secondary" id="howToBtn">How to Import?</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="theme-toggle" id="themeToggle">
+        <svg class="sun-icon" fill="none" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 1v6m0 6v6m11-11h-6m-6 0H1m17.66 5.66l-4.24-4.24m-6 6l-4.24-4.24m0 12.48l4.24-4.24m6 6l4.24-4.24"/>
+        </svg>
+        <svg class="moon-icon" style="display:none;" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+    </button>
+
+    <div class="modal" id="howToModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <h2>How to Import Your Signature</h2>
+            
+            <h3>Gmail</h3>
+            <ol>
+                <li>Open Gmail and click the gear icon, then "See all settings"</li>
+                <li>Scroll down to the "Signature" section</li>
+                <li>Click "Create new" and give it a name</li>
+                <li>Click inside the signature editor and press Cmd+V (Mac) or Ctrl+V (Windows) to paste</li>
+                <li>Scroll down and click "Save Changes"</li>
+            </ol>
+
+            <h3>macOS Mail</h3>
+            <ol>
+                <li>Open Mail and go to Mail → Settings → Signatures</li>
+                <li>Select the email account on the left</li>
+                <li>Click the "+" button to create a new signature</li>
+                <li>Name your signature in the middle column</li>
+                <li>Paste your signature in the right panel</li>
+                <li>Close the settings window to save</li>
+            </ol>
+
+            <h3>iOS Mail</h3>
+            <ol>
+                <li>Open Settings → Mail → Signature</li>
+                <li>If you have multiple accounts, choose "Per Account"</li>
+                <li>Tap the signature field for your account</li>
+                <li>Select all existing text and delete it</li>
+                <li>Paste your new signature (long press and select Paste)</li>
+                <li>Go back to save automatically</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Signature copied to clipboard!</div>
+
+    <script>
+        const inputs = {
+            name: document.getElementById('name'),
+            title: document.getElementById('title'),
+            phone: document.getElementById('phone'),
+            twitter: document.getElementById('twitter')
+        };
+
+        const preview = document.getElementById('signaturePreview');
+        const copyBtn = document.getElementById('copyBtn');
+        const howToBtn = document.getElementById('howToBtn');
+        const modal = document.getElementById('howToModal');
+        const modalClose = document.getElementById('modalClose');
+        const toast = document.getElementById('toast');
+        const themeToggle = document.getElementById('themeToggle');
+        const clearBtns = document.querySelectorAll('.clear-btn');
+
+        // Theme toggle
+        const sunIcon = document.querySelector('.sun-icon');
+        const moonIcon = document.querySelector('.moon-icon');
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            sunIcon.style.display = isDark ? 'block' : 'none';
+            moonIcon.style.display = isDark ? 'none' : 'block';
+        });
+
+        // Clear button functionality
+        clearBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const inputId = e.currentTarget.getAttribute('data-input');
+                inputs[inputId].value = '';
+                inputs[inputId].focus();
+                updatePreview();
+            });
+        });
+
+        // Show/hide clear buttons
+        Object.values(inputs).forEach(input => {
+            input.addEventListener('input', (e) => {
+                const wrapper = e.target.closest('.input-wrapper');
+                const clearBtn = wrapper.querySelector('.clear-btn');
+                if (e.target.value) {
+                    clearBtn.classList.add('visible');
+                } else {
+                    clearBtn.classList.remove('visible');
+                }
+                updatePreview();
+            });
+        });
+
+        function generateSignatureHTML(data) {
+            const { name, title, phone, twitter } = data;
+            
+            if (!name && !title && !phone && !twitter) {
+                return '<p style="color: #7a6f65; font-style: italic;">Enter your details to see a preview</p>';
+            }
+
+            const logoSVG = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="8" fill="#d97757"/>
+                <path d="M20 12L28 20L20 28L12 20L20 12Z" fill="white" opacity="0.9"/>
+                <circle cx="20" cy="20" r="4" fill="white"/>
+            </svg>`;
+
+            const contactParts = [];
+            if (phone) contactParts.push(phone);
+            if (twitter) {
+                const handle = twitter.startsWith('@') ? twitter : `@${twitter}`;
+                contactParts.push(handle);
+            }
+            const contactLine = contactParts.join(' • ');
+
+            return `
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 1.5; color: #2a2520;">
+                    <tr>
+                        <td style="padding-bottom: 12px;">
+                            <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
+                                ${logoSVG}
+                            </a>
+                        </td>
+                    </tr>
+                    ${name ? `
+                    <tr>
+                        <td style="font-weight: 600; font-size: 16px; padding-bottom: 2px;">
+                            ${name}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${title ? `
+                    <tr>
+                        <td style="color: #7a6f65; padding-bottom: 2px;">
+                            ${title}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${contactLine ? `
+                    <tr>
+                        <td style="color: #7a6f65; padding-top: 8px;">
+                            ${contactLine}
+                        </td>
+                    </tr>
+                    ` : ''}
+                </table>
+            `;
+        }
+
+        function updatePreview() {
+            const data = {
+                name: inputs.name.value.trim(),
+                title: inputs.title.value.trim(),
+                phone: inputs.phone.value.trim(),
+                twitter: inputs.twitter.value.trim()
+            };
+
+            preview.innerHTML = generateSignatureHTML(data);
+        }
+
+        async function copySignature() {
+            const data = {
+                name: inputs.name.value.trim(),
+                title: inputs.title.value.trim(),
+                phone: inputs.phone.value.trim(),
+                twitter: inputs.twitter.value.trim()
+            };
+
+            const html = generateSignatureHTML(data);
+
+            try {
+                const type = 'text/html';
+                const blob = new Blob([html], { type });
+                const clipboardItem = new ClipboardItem({ [type]: blob });
+                await navigator.clipboard.write([clipboardItem]);
+                
+                showToast();
+            } catch (err) {
+                // Fallback for browsers that don't support ClipboardItem
+                const textarea = document.createElement('textarea');
+                textarea.value = html;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                showToast();
+            }
+        }
+
+        function showToast() {
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        copyBtn.addEventListener('click', copySignature);
+        howToBtn.addEventListener('click', () => modal.classList.add('active'));
+        modalClose.addEventListener('click', () => modal.classList.remove('active'));
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+
+        // Initialize
+        updatePreview();
+    </script>
+</body>
+</html>
