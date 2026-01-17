@@ -2,6 +2,9 @@
 
 A modern, professional email signature generator that creates consistent email signatures with export options for common email clients.
 
+## Live Demo
+Try it out: [https://mlaplante.github.io/EmailSignature/](https://mlaplante.github.io/EmailSignature/)
+
 ## Overview
 
 The Email Signature Generator is a web-based application that helps you create beautiful, professional email signatures with a clean and intuitive interface. It generates consistent signatures that can be easily exported and imported into various email clients including Gmail, macOS Mail, and iOS Mail.
@@ -25,7 +28,7 @@ The Email Signature Generator is a web-based application that helps you create b
 
 ### Getting Started
 
-1. Open `email-signature-generator.html` in your web browser
+1. Open `index.html` in your web browser or visit the [live demo](https://mlaplante.github.io/EmailSignature/)
 2. Fill in your information in the form fields:
    - **Name**: Your full name
    - **Job Title**: Your professional title or role
@@ -68,12 +71,12 @@ The signature generator uses CSS variables for easy theming customization. You c
 
 ## Installation
 
-No installation required! Simply download or clone the repository and open `email-signature-generator.html` in your web browser.
+No installation required! Simply download or clone the repository and open `index.html` in your web browser, or visit the [live demo](https://mlaplante.github.io/EmailSignature/).
 
 ```bash
 git clone https://github.com/mlaplante/EmailSignature.git
 cd EmailSignature
-open email-signature-generator.html
+open index.html
 ```
 
 Or you can host it on any web server or GitHub Pages for easy access.
