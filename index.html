@@ -657,13 +657,13 @@
             const file = e.target.files[0];
             if (file) {
                 // Validate file type
-                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
                 const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
                 const fileName = file.name.toLowerCase();
                 const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
                 
                 if (!validTypes.includes(file.type) || !hasValidExtension) {
-                    alert('Please upload a valid image file (JPEG, PNG, GIF, WebP, or SVG)');
+                    showToast('Please upload a valid image file (JPEG, PNG, GIF, WebP, or SVG)');
                     logoInput.value = '';
                     return;
                 }
@@ -671,7 +671,7 @@
                 // Validate file size (max 5MB)
                 const maxSize = 5 * 1024 * 1024; // 5MB in bytes
                 if (file.size > maxSize) {
-                    alert('Image file is too large. Please upload an image smaller than 5MB.');
+                    showToast('Image file is too large. Please upload an image smaller than 5MB.');
                     logoInput.value = '';
                     return;
                 }
@@ -687,12 +687,12 @@
                         uploadBtn.style.display = 'none';
                         updatePreview();
                     } else {
-                        alert('Failed to process the image. Please try a different file.');
+                        showToast('Failed to process the image. Please try a different file.');
                         logoInput.value = '';
                     }
                 };
                 reader.onerror = () => {
-                    alert('Failed to read the image file. Please try again.');
+                    showToast('Failed to read the image file. Please try again.');
                     logoInput.value = '';
                 };
                 reader.readAsDataURL(file);
@@ -809,7 +809,8 @@
             }
         }
 
-        function showToast() {
+        function showToast(message = 'Signature copied to clipboard!') {
+            toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
