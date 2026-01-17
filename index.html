@@ -714,6 +714,14 @@
             return div.innerHTML;
         }
 
+        function escapeAttribute(text) {
+            if (!text) return '';
+            return text.replace(/"/g, '&quot;')
+                       .replace(/'/g, '&#39;')
+                       .replace(/</g, '&lt;')
+                       .replace(/>/g, '&gt;');
+        }
+
         function sanitizeUrl(url) {
             if (!url) return '';
             
@@ -757,7 +765,8 @@
             if (bookMe) {
                 const sanitizedUrl = sanitizeUrl(bookMe);
                 if (sanitizedUrl) {
-                    contactParts.push(`<a href="${sanitizedUrl}" style="color: #d97757; text-decoration: none;">Book a Meeting</a>`);
+                    const escapedUrl = escapeAttribute(sanitizedUrl);
+                    contactParts.push(`<a href="${escapedUrl}" style="color: #d97757; text-decoration: none;">Book a Meeting</a>`);
                 }
             }
             const contactLine = contactParts.join(' • ');
