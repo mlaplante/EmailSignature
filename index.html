@@ -491,10 +491,10 @@
                 </div>
 
                 <div class="input-group">
-                    <label for="twitter">Twitter/X Handle</label>
+                    <label for="bookMe">Book Me Link (Optional)</label>
                     <div class="input-wrapper">
-                        <input type="text" id="twitter" placeholder="@yourhandle">
-                        <button class="clear-btn" data-input="twitter">
+                        <input type="url" id="bookMe" placeholder="https://calendly.com/yourname">
+                        <button class="clear-btn" data-input="bookMe">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 4L4 12M4 4l8 8"/>
                             </svg>
@@ -594,7 +594,7 @@
             name: document.getElementById('name'),
             title: document.getElementById('title'),
             phone: document.getElementById('phone'),
-            twitter: document.getElementById('twitter')
+            bookMe: document.getElementById('bookMe')
         };
 
         const logoInput = document.getElementById('logo');
@@ -707,10 +707,46 @@
             updatePreview();
         });
 
-        function generateSignatureHTML(data) {
-            const { name, title, phone, twitter } = data;
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, '&amp;')
+                       .replace(/</g, '&lt;')
+                       .replace(/>/g, '&gt;')
+                       .replace(/"/g, '&quot;')
+                       .replace(/'/g, '&#39;');
+        }
+
+        function escapeAttribute(text) {
+            if (!text) return '';
+            return text.replace(/&/g, '&amp;')
+                       .replace(/"/g, '&quot;')
+                       .replace(/'/g, '&#39;')
+                       .replace(/</g, '&lt;')
+                       .replace(/>/g, '&gt;');
+        }
+
+        function sanitizeUrl(url) {
+            if (!url) return '';
             
-            if (!name && !title && !phone && !twitter) {
+            // Parse and validate the URL using the URL constructor
+            try {
+                const tempUrl = new URL(url.trim());
+                // Only allow http and https protocols
+                // Also ensure the URL is absolute (has a hostname)
+                if ((tempUrl.protocol === 'http:' || tempUrl.protocol === 'https:') && tempUrl.hostname) {
+                    return tempUrl.href;
+                }
+            } catch (e) {
+                // Invalid URL
+                return '';
+            }
+            return '';
+        }
+
+        function generateSignatureHTML(data) {
+            const { name, title, phone, bookMe } = data;
+            
+            if (!name && !title && !phone && !bookMe) {
                 return '<p style="color: #7a6f65; font-style: italic;">Enter your details to see a preview</p>';
             }
 
@@ -724,11 +760,18 @@
                 ? `<img src="${logoDataUrl}" alt="Logo" style="width: 40px; height: 40px; display: block; border-radius: 8px;">`
                 : logoSVG;
 
+            const escapedName = escapeHtml(name);
+            const escapedTitle = escapeHtml(title);
+            const escapedPhone = escapeHtml(phone);
+
             const contactParts = [];
-            if (phone) contactParts.push(phone);
-            if (twitter) {
-                const handle = twitter.startsWith('@') ? twitter : `@${twitter}`;
-                contactParts.push(handle);
+            if (escapedPhone) contactParts.push(escapedPhone);
+            if (bookMe) {
+                const sanitizedUrl = sanitizeUrl(bookMe);
+                if (sanitizedUrl) {
+                    const escapedUrl = escapeAttribute(sanitizedUrl);
+                    contactParts.push(`<a href="${escapedUrl}" style="color: #d97757; text-decoration: none;">Book a Meeting</a>`);
+                }
             }
             const contactLine = contactParts.join(' • ');
 
@@ -741,17 +784,17 @@
                             </a>
                         </td>
                     </tr>
-                    ${name ? `
+                    ${escapedName ? `
                     <tr>
                         <td style="font-weight: 600; font-size: 16px; padding-bottom: 2px;">
-                            ${name}
+                            ${escapedName}
                         </td>
                     </tr>
                     ` : ''}
-                    ${title ? `
+                    ${escapedTitle ? `
                     <tr>
                         <td style="color: #7a6f65; padding-bottom: 2px;">
-                            ${title}
+                            ${escapedTitle}
                         </td>
                     </tr>
                     ` : ''}
@@ -771,7 +814,7 @@
                 name: inputs.name.value.trim(),
                 title: inputs.title.value.trim(),
                 phone: inputs.phone.value.trim(),
-                twitter: inputs.twitter.value.trim()
+                bookMe: inputs.bookMe.value.trim()
             };
 
             preview.innerHTML = generateSignatureHTML(data);
@@ -782,7 +825,7 @@
                 name: inputs.name.value.trim(),
                 title: inputs.title.value.trim(),
                 phone: inputs.phone.value.trim(),
-                twitter: inputs.twitter.value.trim()
+                bookMe: inputs.bookMe.value.trim()
             };
 
             const html = generateSignatureHTML(data);
