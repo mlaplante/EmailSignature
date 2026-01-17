@@ -346,6 +346,78 @@
             transform: translateX(-50%) translateY(0);
         }
 
+        .logo-upload-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn-upload {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: fit-content;
+        }
+
+        .btn-upload:hover {
+            background: var(--border);
+        }
+
+        .btn-upload svg {
+            stroke: var(--text-primary);
+        }
+
+        .logo-preview {
+            position: relative;
+            width: fit-content;
+            padding: 0.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+
+        .logo-preview img {
+            display: block;
+            max-width: 120px;
+            max-height: 120px;
+            border-radius: 8px;
+        }
+
+        .btn-remove-logo {
+            position: absolute;
+            top: 0.25rem;
+            right: 0.25rem;
+            background: var(--text-primary);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+            transition: all 0.2s ease;
+        }
+
+        .btn-remove-logo:hover {
+            transform: scale(1.1);
+        }
+
+        .btn-remove-logo svg {
+            stroke: var(--bg-primary);
+        }
+
         @media (max-width: 640px) {
             h1 {
                 font-size: 2rem;
@@ -429,6 +501,27 @@
                         </button>
                     </div>
                 </div>
+
+                <div class="input-group">
+                    <label for="logo">Custom Logo</label>
+                    <div class="logo-upload-wrapper">
+                        <input type="file" id="logo" accept="image/*" style="display: none;">
+                        <button class="btn-upload" id="uploadBtn">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 10v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2M11 5L8 2m0 0L5 5m3-3v9"/>
+                            </svg>
+                            Upload Logo
+                        </button>
+                        <div class="logo-preview" id="logoPreview" style="display: none;">
+                            <img id="logoImage" alt="Uploaded logo preview">
+                            <button class="btn-remove-logo" id="removeLogo">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 4L4 12M4 4l8 8"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -504,6 +597,13 @@
             twitter: document.getElementById('twitter')
         };
 
+        const logoInput = document.getElementById('logo');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const logoPreview = document.getElementById('logoPreview');
+        const logoImage = document.getElementById('logoImage');
+        const removeLogo = document.getElementById('removeLogo');
+        let logoDataUrl = null;
+
         const preview = document.getElementById('signaturePreview');
         const copyBtn = document.getElementById('copyBtn');
         const howToBtn = document.getElementById('howToBtn');
@@ -548,6 +648,65 @@
             });
         });
 
+        // Logo upload functionality
+        uploadBtn.addEventListener('click', () => {
+            logoInput.click();
+        });
+
+        logoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+                const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+                const fileName = file.name.toLowerCase();
+                const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+                
+                if (!validTypes.includes(file.type) || !hasValidExtension) {
+                    showToast('Please upload a valid image file (JPEG, PNG, GIF, WebP, or SVG)');
+                    logoInput.value = '';
+                    return;
+                }
+                
+                // Validate file size (max 5MB)
+                const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                if (file.size > maxSize) {
+                    showToast('Image file is too large. Please upload an image smaller than 5MB.');
+                    logoInput.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const dataUrl = event.target.result;
+                    // Validate the data URL format
+                    if (typeof dataUrl === 'string' && dataUrl.startsWith('data:image/')) {
+                        logoDataUrl = dataUrl;
+                        logoImage.src = logoDataUrl;
+                        logoPreview.style.display = 'block';
+                        uploadBtn.style.display = 'none';
+                        updatePreview();
+                    } else {
+                        showToast('Failed to process the image. Please try a different file.');
+                        logoInput.value = '';
+                    }
+                };
+                reader.onerror = () => {
+                    showToast('Failed to read the image file. Please try again.');
+                    logoInput.value = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removeLogo.addEventListener('click', () => {
+            logoDataUrl = null;
+            logoInput.value = '';
+            logoPreview.style.display = 'none';
+            uploadBtn.style.display = 'inline-flex';
+            updatePreview();
+        });
+
         function generateSignatureHTML(data) {
             const { name, title, phone, twitter } = data;
             
@@ -560,6 +719,10 @@
                 <path d="M20 12L28 20L20 28L12 20L20 12Z" fill="white" opacity="0.9"/>
                 <circle cx="20" cy="20" r="4" fill="white"/>
             </svg>`;
+
+            const logoHTML = logoDataUrl && typeof logoDataUrl === 'string' && logoDataUrl.startsWith('data:image/')
+                ? `<img src="${logoDataUrl}" alt="Logo" style="width: 40px; height: 40px; display: block; border-radius: 8px;">`
+                : logoSVG;
 
             const contactParts = [];
             if (phone) contactParts.push(phone);
@@ -574,7 +737,7 @@
                     <tr>
                         <td style="padding-bottom: 12px;">
                             <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
-                                ${logoSVG}
+                                ${logoHTML}
                             </a>
                         </td>
                     </tr>
@@ -646,7 +809,8 @@
             }
         }
 
-        function showToast() {
+        function showToast(message = 'Signature copied to clipboard!') {
+            toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
