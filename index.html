@@ -707,6 +707,30 @@
             updatePreview();
         });
 
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function sanitizeUrl(url) {
+            if (!url) return '';
+            
+            // Create a temporary anchor element to parse the URL
+            try {
+                const tempUrl = new URL(url.trim());
+                // Only allow http and https protocols
+                if (tempUrl.protocol === 'http:' || tempUrl.protocol === 'https:') {
+                    return tempUrl.href;
+                }
+            } catch (e) {
+                // Invalid URL
+                return '';
+            }
+            return '';
+        }
+
         function generateSignatureHTML(data) {
             const { name, title, phone, bookMe } = data;
             
@@ -724,10 +748,17 @@
                 ? `<img src="${logoDataUrl}" alt="Logo" style="width: 40px; height: 40px; display: block; border-radius: 8px;">`
                 : logoSVG;
 
+            const escapedName = escapeHtml(name);
+            const escapedTitle = escapeHtml(title);
+            const escapedPhone = escapeHtml(phone);
+
             const contactParts = [];
-            if (phone) contactParts.push(phone);
+            if (escapedPhone) contactParts.push(escapedPhone);
             if (bookMe) {
-                contactParts.push(`<a href="${bookMe}" style="color: #d97757; text-decoration: none;">Book a Meeting</a>`);
+                const sanitizedUrl = sanitizeUrl(bookMe);
+                if (sanitizedUrl) {
+                    contactParts.push(`<a href="${sanitizedUrl}" style="color: #d97757; text-decoration: none;">Book a Meeting</a>`);
+                }
             }
             const contactLine = contactParts.join(' • ');
 
@@ -740,17 +771,17 @@
                             </a>
                         </td>
                     </tr>
-                    ${name ? `
+                    ${escapedName ? `
                     <tr>
                         <td style="font-weight: 600; font-size: 16px; padding-bottom: 2px;">
-                            ${name}
+                            ${escapedName}
                         </td>
                     </tr>
                     ` : ''}
-                    ${title ? `
+                    ${escapedTitle ? `
                     <tr>
                         <td style="color: #7a6f65; padding-bottom: 2px;">
-                            ${title}
+                            ${escapedTitle}
                         </td>
                     </tr>
                     ` : ''}
