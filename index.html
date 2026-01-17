@@ -718,7 +718,8 @@
 
         function escapeAttribute(text) {
             if (!text) return '';
-            return text.replace(/"/g, '&quot;')
+            return text.replace(/&/g, '&amp;')
+                       .replace(/"/g, '&quot;')
                        .replace(/'/g, '&#39;')
                        .replace(/</g, '&lt;')
                        .replace(/>/g, '&gt;');
@@ -731,7 +732,8 @@
             try {
                 const tempUrl = new URL(url.trim());
                 // Only allow http and https protocols
-                if (tempUrl.protocol === 'http:' || tempUrl.protocol === 'https:') {
+                // Also ensure the URL is absolute (has a hostname)
+                if ((tempUrl.protocol === 'http:' || tempUrl.protocol === 'https:') && tempUrl.hostname) {
                     return tempUrl.href;
                 }
             } catch (e) {
