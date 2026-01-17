@@ -14,7 +14,7 @@ The Email Signature Generator is a web-based application that helps you create b
 - **Clean, Modern Interface**: Beautiful user interface with a professional design aesthetic
 - **Live Preview**: See your email signature update in real-time as you type
 - **Dark/Light Theme**: Toggle between dark and light themes for comfortable viewing
-- **Multiple Fields**: Include your name, job title, phone number, and Twitter/X handle
+- **Multiple Fields**: Include your name, job title, phone number, and an optional booking link
 - **One-Click Copy**: Copy your signature to clipboard with a single click
 - **Export Guides**: Built-in instructions for importing signatures into common email clients:
   - Gmail
@@ -33,7 +33,7 @@ The Email Signature Generator is a web-based application that helps you create b
    - **Name**: Your full name
    - **Job Title**: Your professional title or role
    - **Phone Number**: Your contact number
-   - **Twitter/X Handle**: Your social media handle (with or without @)
+   - **Book Me Link**: Optional link to your booking/scheduling page (e.g., Calendly)
 3. Watch your signature preview update in real-time
 4. Click "Copy Signature" to copy the formatted signature to your clipboard
 5. Click "How to Import?" to see instructions for your email client

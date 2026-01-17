@@ -491,10 +491,10 @@
                 </div>
 
                 <div class="input-group">
-                    <label for="twitter">Twitter/X Handle</label>
+                    <label for="bookMe">Book Me Link (Optional)</label>
                     <div class="input-wrapper">
-                        <input type="text" id="twitter" placeholder="@yourhandle">
-                        <button class="clear-btn" data-input="twitter">
+                        <input type="url" id="bookMe" placeholder="https://calendly.com/yourname">
+                        <button class="clear-btn" data-input="bookMe">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 4L4 12M4 4l8 8"/>
                             </svg>
@@ -594,7 +594,7 @@
             name: document.getElementById('name'),
             title: document.getElementById('title'),
             phone: document.getElementById('phone'),
-            twitter: document.getElementById('twitter')
+            bookMe: document.getElementById('bookMe')
         };
 
         const logoInput = document.getElementById('logo');
@@ -708,9 +708,9 @@
         });
 
         function generateSignatureHTML(data) {
-            const { name, title, phone, twitter } = data;
+            const { name, title, phone, bookMe } = data;
             
-            if (!name && !title && !phone && !twitter) {
+            if (!name && !title && !phone && !bookMe) {
                 return '<p style="color: #7a6f65; font-style: italic;">Enter your details to see a preview</p>';
             }
 
@@ -726,9 +726,8 @@
 
             const contactParts = [];
             if (phone) contactParts.push(phone);
-            if (twitter) {
-                const handle = twitter.startsWith('@') ? twitter : `@${twitter}`;
-                contactParts.push(handle);
+            if (bookMe) {
+                contactParts.push(`<a href="${bookMe}" style="color: #d97757; text-decoration: none;">Book a Meeting</a>`);
             }
             const contactLine = contactParts.join(' • ');
 
@@ -771,7 +770,7 @@
                 name: inputs.name.value.trim(),
                 title: inputs.title.value.trim(),
                 phone: inputs.phone.value.trim(),
-                twitter: inputs.twitter.value.trim()
+                bookMe: inputs.bookMe.value.trim()
             };
 
             preview.innerHTML = generateSignatureHTML(data);
@@ -782,7 +781,7 @@
                 name: inputs.name.value.trim(),
                 title: inputs.title.value.trim(),
                 phone: inputs.phone.value.trim(),
-                twitter: inputs.twitter.value.trim()
+                bookMe: inputs.bookMe.value.trim()
             };
 
             const html = generateSignatureHTML(data);
