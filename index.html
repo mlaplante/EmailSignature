@@ -660,7 +660,14 @@
     <div class="toast" id="toast">Signature copied to clipboard!</div>
 
     <script>
-        // Brand presets with color schemes
+        /**
+         * Brand presets with color schemes.
+         * Each preset includes a set of coordinated colors for email signatures:
+         * @property {string} name - Display name of the brand color scheme
+         * @property {string} accentColor - Primary accent color used for logo background and links
+         * @property {string} textColor - Primary text color used for the name
+         * @property {string} mutedColor - Muted text color used for title, company, and contact info
+         */
         const brandPresets = {
             'default': {
                 name: 'Warm Terra',
@@ -788,8 +795,8 @@
 
         // Show/hide clear buttons
         Object.entries(inputs).forEach(([key, input]) => {
-            // Skip non-text inputs (like selects)
-            if (input.tagName === 'SELECT') return;
+            // Skip non-text inputs (like selects, checkboxes, radio buttons)
+            if (!input.closest || !input.closest('.input-wrapper')) return;
             
             input.addEventListener('input', (e) => {
                 const wrapper = e.target.closest('.input-wrapper');
