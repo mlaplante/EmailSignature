@@ -905,7 +905,7 @@
         function generateSignatureHTML(data) {
             const { company, name, title, phone, bookMe } = data;
             
-            if (!name && !title && !phone && !bookMe && !company) {
+            if (!company && !name && !title && !phone && !bookMe) {
                 return '<p style="color: #7a6f65; font-style: italic;">Enter your details to see a preview</p>';
             }
 
