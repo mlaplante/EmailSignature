@@ -844,13 +844,9 @@
             return '';
         }
 
-        function generateSignatureHTML(data) {
+        function prepareSignatureData(data) {
             const { name, title, phone, bookMe } = data;
             
-            if (!name && !title && !phone && !bookMe) {
-                return '<p style="color: #7a6f65; font-style: italic;">Enter your details to see a preview</p>';
-            }
-
             const logoSVG = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="40" height="40" rx="8" fill="#d97757"/>
                 <path d="M20 12L28 20L20 28L12 20L20 12Z" fill="white" opacity="0.9"/>
@@ -876,13 +872,25 @@
             }
             const contactLine = contactParts.join(' • ');
 
+            return { escapedName, escapedTitle, contactLine, logoHTML };
+        }
+
+        function generateSignatureHTML(data) {
+            const { name, title, phone, bookMe } = data;
+            
+            if (!name && !title && !phone && !bookMe) {
+                return '<p style="color: #7a6f65; font-style: italic;">Enter your details to see a preview</p>';
+            }
+
+            const signatureData = prepareSignatureData(data);
+
             // Generate HTML based on current preview mode
             if (currentPreviewMode === 'gmail') {
-                return generateGmailSignature({ escapedName, escapedTitle, contactLine, logoHTML });
+                return generateGmailSignature(signatureData);
             } else if (currentPreviewMode === 'outlook') {
-                return generateOutlookSignature({ escapedName, escapedTitle, contactLine, logoHTML });
+                return generateOutlookSignature(signatureData);
             } else {
-                return generateStandardSignature({ escapedName, escapedTitle, contactLine, logoHTML });
+                return generateStandardSignature(signatureData);
             }
         }
 
@@ -1012,33 +1020,10 @@
                 bookMe: inputs.bookMe.value.trim()
             };
 
-            const escapedName = escapeHtml(data.name);
-            const escapedTitle = escapeHtml(data.title);
-            const escapedPhone = escapeHtml(data.phone);
-
-            const contactParts = [];
-            if (escapedPhone) contactParts.push(escapedPhone);
-            if (data.bookMe) {
-                const sanitizedUrl = sanitizeUrl(data.bookMe);
-                if (sanitizedUrl) {
-                    const escapedUrl = escapeAttribute(sanitizedUrl);
-                    contactParts.push(`<a href="${escapedUrl}" style="color: #d97757; text-decoration: none;">Book a Meeting</a>`);
-                }
-            }
-            const contactLine = contactParts.join(' • ');
-
-            const logoSVG = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="40" height="40" rx="8" fill="#d97757"/>
-                <path d="M20 12L28 20L20 28L12 20L20 12Z" fill="white" opacity="0.9"/>
-                <circle cx="20" cy="20" r="4" fill="white"/>
-            </svg>`;
-
-            const logoHTML = logoDataUrl && typeof logoDataUrl === 'string' && logoDataUrl.startsWith('data:image/')
-                ? `<img src="${logoDataUrl}" alt="Logo" style="width: 40px; height: 40px; display: block; border-radius: 8px;">`
-                : logoSVG;
+            const signatureData = prepareSignatureData(data);
 
             // Always copy the standard version for compatibility
-            const html = generateStandardSignature({ escapedName, escapedTitle, contactLine, logoHTML });
+            const html = generateStandardSignature(signatureData);
 
             try {
                 const type = 'text/html';
