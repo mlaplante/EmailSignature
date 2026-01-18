@@ -793,7 +793,10 @@
             const escapedPhone = escapeHtml(phone);
 
             const contactParts = [];
-            if (escapedEmail) contactParts.push(`<a href="mailto:${escapeAttribute(email)}" style="color: #d97757; text-decoration: none;">${escapedEmail}</a>`);
+            if (email) {
+                const escapedEmailHref = escapeAttribute(email);
+                contactParts.push(`<a href="mailto:${escapedEmailHref}" style="color: #d97757; text-decoration: none;">${escapedEmail}</a>`);
+            }
             if (escapedPhone) contactParts.push(escapedPhone);
             if (bookMe) {
                 const sanitizedUrl = sanitizeUrl(bookMe);
