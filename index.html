@@ -200,6 +200,37 @@
             font-weight: 600;
         }
 
+        .preview-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-primary);
+            padding: 0.25rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .preview-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .preview-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .preview-tab.active {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            box-shadow: 0 1px 3px var(--shadow);
+        }
+
         .preview-content {
             background: var(--bg-primary);
             border: 1px solid var(--border);
@@ -209,6 +240,37 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .preview-content.gmail-preview {
+            background: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        .preview-content.outlook-preview {
+            background: #f3f2f1;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        [data-theme="dark"] .preview-content.gmail-preview {
+            background: #ffffff;
+        }
+
+        [data-theme="dark"] .preview-content.outlook-preview {
+            background: #f3f2f1;
+        }
+
+        .client-label {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: var(--accent);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            opacity: 0.8;
         }
 
         .signature-preview {
@@ -528,8 +590,13 @@
         <div class="preview-section">
             <div class="preview-header">
                 <h2>Preview</h2>
+                <div class="preview-tabs">
+                    <button class="preview-tab active" data-preview="standard">Standard</button>
+                    <button class="preview-tab" data-preview="gmail">Gmail</button>
+                    <button class="preview-tab" data-preview="outlook">Outlook</button>
+                </div>
             </div>
-            <div class="preview-content">
+            <div class="preview-content" id="previewContent">
                 <div class="signature-preview" id="signaturePreview">
                     <!-- Signature will be generated here -->
                 </div>
@@ -556,6 +623,8 @@
             <button class="modal-close" id="modalClose">&times;</button>
             <h2>How to Import Your Signature</h2>
             
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Use the preview tabs above to see how your signature will look in different email clients. The copied signature will work in all email clients.</p>
+            
             <h3>Gmail</h3>
             <ol>
                 <li>Open Gmail and click the gear icon, then "See all settings"</li>
@@ -563,6 +632,15 @@
                 <li>Click "Create new" and give it a name</li>
                 <li>Click inside the signature editor and press Cmd+V (Mac) or Ctrl+V (Windows) to paste</li>
                 <li>Scroll down and click "Save Changes"</li>
+            </ol>
+
+            <h3>Outlook</h3>
+            <ol>
+                <li>Open Outlook and go to File → Options → Mail → Signatures</li>
+                <li>Click "New" to create a new signature</li>
+                <li>Give your signature a name</li>
+                <li>Click in the signature editor and paste with Ctrl+V (Windows) or Cmd+V (Mac)</li>
+                <li>Click "OK" to save</li>
             </ol>
 
             <h3>macOS Mail</h3>
@@ -605,6 +683,7 @@
         let logoDataUrl = null;
 
         const preview = document.getElementById('signaturePreview');
+        const previewContent = document.getElementById('previewContent');
         const copyBtn = document.getElementById('copyBtn');
         const howToBtn = document.getElementById('howToBtn');
         const modal = document.getElementById('howToModal');
@@ -612,6 +691,8 @@
         const toast = document.getElementById('toast');
         const themeToggle = document.getElementById('themeToggle');
         const clearBtns = document.querySelectorAll('.clear-btn');
+        const previewTabs = document.querySelectorAll('.preview-tab');
+        let currentPreviewMode = 'standard';
 
         // Theme toggle
         const sunIcon = document.querySelector('.sun-icon');
@@ -623,6 +704,26 @@
             sunIcon.style.display = isDark ? 'block' : 'none';
             moonIcon.style.display = isDark ? 'none' : 'block';
         });
+
+        // Preview tab switching
+        previewTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                previewTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentPreviewMode = tab.getAttribute('data-preview');
+                updatePreviewMode();
+                updatePreview();
+            });
+        });
+
+        function updatePreviewMode() {
+            previewContent.classList.remove('gmail-preview', 'outlook-preview');
+            if (currentPreviewMode === 'gmail') {
+                previewContent.classList.add('gmail-preview');
+            } else if (currentPreviewMode === 'outlook') {
+                previewContent.classList.add('outlook-preview');
+            }
+        }
 
         // Clear button functionality
         clearBtns.forEach(btn => {
@@ -775,6 +876,17 @@
             }
             const contactLine = contactParts.join(' • ');
 
+            // Generate HTML based on current preview mode
+            if (currentPreviewMode === 'gmail') {
+                return generateGmailSignature({ escapedName, escapedTitle, contactLine, logoHTML });
+            } else if (currentPreviewMode === 'outlook') {
+                return generateOutlookSignature({ escapedName, escapedTitle, contactLine, logoHTML });
+            } else {
+                return generateStandardSignature({ escapedName, escapedTitle, contactLine, logoHTML });
+            }
+        }
+
+        function generateStandardSignature({ escapedName, escapedTitle, contactLine, logoHTML }) {
             return `
                 <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 1.5; color: #2a2520;">
                     <tr>
@@ -809,6 +921,78 @@
             `;
         }
 
+        function generateGmailSignature({ escapedName, escapedTitle, contactLine, logoHTML }) {
+            // Gmail uses Arial and has specific rendering characteristics
+            return `
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 1.4; color: #000000;">
+                    <tr>
+                        <td style="padding-bottom: 10px;">
+                            <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
+                                ${logoHTML}
+                            </a>
+                        </td>
+                    </tr>
+                    ${escapedName ? `
+                    <tr>
+                        <td style="font-weight: bold; font-size: 14px; padding-bottom: 4px; color: #000000;">
+                            ${escapedName}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${escapedTitle ? `
+                    <tr>
+                        <td style="color: #5f6368; padding-bottom: 4px; font-size: 13px;">
+                            ${escapedTitle}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${contactLine ? `
+                    <tr>
+                        <td style="color: #5f6368; padding-top: 6px; font-size: 13px;">
+                            ${contactLine}
+                        </td>
+                    </tr>
+                    ` : ''}
+                </table>
+            `;
+        }
+
+        function generateOutlookSignature({ escapedName, escapedTitle, contactLine, logoHTML }) {
+            // Outlook uses Calibri/Segoe UI and has different rendering
+            return `
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11pt; line-height: 1.35; color: #000000;">
+                    <tr>
+                        <td style="padding-bottom: 10px;">
+                            <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
+                                ${logoHTML}
+                            </a>
+                        </td>
+                    </tr>
+                    ${escapedName ? `
+                    <tr>
+                        <td style="font-weight: 600; font-size: 12pt; padding-bottom: 3px; color: #0078d4;">
+                            ${escapedName}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${escapedTitle ? `
+                    <tr>
+                        <td style="color: #666666; padding-bottom: 3px; font-size: 10pt;">
+                            ${escapedTitle}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${contactLine ? `
+                    <tr>
+                        <td style="color: #666666; padding-top: 6px; font-size: 10pt;">
+                            ${contactLine}
+                        </td>
+                    </tr>
+                    ` : ''}
+                </table>
+            `;
+        }
+
         function updatePreview() {
             const data = {
                 name: inputs.name.value.trim(),
@@ -828,7 +1012,33 @@
                 bookMe: inputs.bookMe.value.trim()
             };
 
-            const html = generateSignatureHTML(data);
+            const escapedName = escapeHtml(data.name);
+            const escapedTitle = escapeHtml(data.title);
+            const escapedPhone = escapeHtml(data.phone);
+
+            const contactParts = [];
+            if (escapedPhone) contactParts.push(escapedPhone);
+            if (data.bookMe) {
+                const sanitizedUrl = sanitizeUrl(data.bookMe);
+                if (sanitizedUrl) {
+                    const escapedUrl = escapeAttribute(sanitizedUrl);
+                    contactParts.push(`<a href="${escapedUrl}" style="color: #d97757; text-decoration: none;">Book a Meeting</a>`);
+                }
+            }
+            const contactLine = contactParts.join(' • ');
+
+            const logoSVG = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="8" fill="#d97757"/>
+                <path d="M20 12L28 20L20 28L12 20L20 12Z" fill="white" opacity="0.9"/>
+                <circle cx="20" cy="20" r="4" fill="white"/>
+            </svg>`;
+
+            const logoHTML = logoDataUrl && typeof logoDataUrl === 'string' && logoDataUrl.startsWith('data:image/')
+                ? `<img src="${logoDataUrl}" alt="Logo" style="width: 40px; height: 40px; display: block; border-radius: 8px;">`
+                : logoSVG;
+
+            // Always copy the standard version for compatibility
+            const html = generateStandardSignature({ escapedName, escapedTitle, contactLine, logoHTML });
 
             try {
                 const type = 'text/html';
