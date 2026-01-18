@@ -914,7 +914,7 @@
             const { company, name, title, phone, bookMe } = data;
             
             if (!company && !name && !title && !phone && !bookMe) {
-                return '<p style="color: #7a6f65; font-style: italic;">Enter your details to see a preview</p>';
+                return `<p style="color: ${currentBrand.mutedColor}; font-style: italic;">Enter your details to see a preview</p>`;
             }
 
             const logoSVG = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
