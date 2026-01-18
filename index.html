@@ -795,8 +795,8 @@
 
         // Show/hide clear buttons
         Object.entries(inputs).forEach(([key, input]) => {
-            // Skip non-text inputs (like selects, checkboxes, radio buttons)
-            if (!input.closest || !input.closest('.input-wrapper')) return;
+            // Skip inputs that are not inside input-wrapper (like selects, checkboxes, radio buttons)
+            if (input.tagName !== 'INPUT' || input.type === 'file') return;
             
             input.addEventListener('input', (e) => {
                 const wrapper = e.target.closest('.input-wrapper');
