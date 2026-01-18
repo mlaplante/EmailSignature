@@ -13,8 +13,12 @@ The Email Signature Generator is a web-based application that helps you create b
 
 - **Clean, Modern Interface**: Beautiful user interface with a professional design aesthetic
 - **Live Preview**: See your email signature update in real-time as you type
+- **Layout Options**: Choose between vertical or horizontal signature layouts
+  - **Vertical Layout**: Logo on top, details stacked below (traditional style)
+  - **Horizontal Layout**: Logo on the left, details to the right (compact style)
 - **Dark/Light Theme**: Toggle between dark and light themes for comfortable viewing
 - **Multiple Fields**: Include your name, job title, phone number, and an optional booking link
+- **Custom Logo Upload**: Upload your own logo or use the default one
 - **One-Click Copy**: Copy your signature to clipboard with a single click
 - **Export Guides**: Built-in instructions for importing signatures into common email clients:
   - Gmail
