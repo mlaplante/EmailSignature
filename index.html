@@ -774,6 +774,12 @@
         // Brand selector functionality
         inputs.brand.addEventListener('change', (e) => {
             const brandKey = e.target.value;
+            // Validate brand key exists
+            if (!brandPresets[brandKey]) {
+                console.warn(`Invalid brand key: ${brandKey}`);
+                return;
+            }
+            
             currentBrand = brandPresets[brandKey];
             
             // Update brand preview
@@ -791,10 +797,7 @@
                 if (!input) return;
                 
                 input.value = '';
-                // Only call focus if the element supports it (excludes select elements)
-                if (typeof input.focus === 'function') {
-                    input.focus();
-                }
+                input.focus();
                 updatePreview();
             });
         });
