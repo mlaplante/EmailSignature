@@ -370,6 +370,11 @@
             margin-bottom: 1.5rem;
         }
 
+        .modal p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
         .modal h3 {
             font-size: 1.1rem;
             margin-top: 1.5rem;
@@ -623,7 +628,7 @@
             <button class="modal-close" id="modalClose">&times;</button>
             <h2>How to Import Your Signature</h2>
             
-            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Use the preview tabs above to see how your signature will look in different email clients. The copied signature will work in all email clients.</p>
+            <p>Use the preview tabs above to see how your signature will look in different email clients. The copied signature will work in all email clients.</p>
             
             <h3>Gmail</h3>
             <ol>
@@ -875,6 +880,15 @@
             return { escapedName, escapedTitle, contactLine, logoHTML };
         }
 
+        function getInputData() {
+            return {
+                name: inputs.name.value.trim(),
+                title: inputs.title.value.trim(),
+                phone: inputs.phone.value.trim(),
+                bookMe: inputs.bookMe.value.trim()
+            };
+        }
+
         function generateSignatureHTML(data) {
             const { name, title, phone, bookMe } = data;
             
@@ -1002,24 +1016,12 @@
         }
 
         function updatePreview() {
-            const data = {
-                name: inputs.name.value.trim(),
-                title: inputs.title.value.trim(),
-                phone: inputs.phone.value.trim(),
-                bookMe: inputs.bookMe.value.trim()
-            };
-
+            const data = getInputData();
             preview.innerHTML = generateSignatureHTML(data);
         }
 
         async function copySignature() {
-            const data = {
-                name: inputs.name.value.trim(),
-                title: inputs.title.value.trim(),
-                phone: inputs.phone.value.trim(),
-                bookMe: inputs.bookMe.value.trim()
-            };
-
+            const data = getInputData();
             const signatureData = prepareSignatureData(data);
 
             // Always copy the standard version for compatibility
