@@ -795,7 +795,8 @@
 
         // Show/hide clear buttons
         Object.entries(inputs).forEach(([key, input]) => {
-            // Skip inputs that are not inside input-wrapper (like selects, checkboxes, radio buttons)
+            // Only process INPUT elements (excludes selects, which don't have clear buttons)
+            // Also exclude file inputs which have their own remove button
             if (input.tagName !== 'INPUT' || input.type === 'file') return;
             
             input.addEventListener('input', (e) => {
