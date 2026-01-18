@@ -787,8 +787,14 @@
         clearBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const inputId = e.currentTarget.getAttribute('data-input');
-                inputs[inputId].value = '';
-                inputs[inputId].focus();
+                const input = inputs[inputId];
+                if (!input) return;
+                
+                input.value = '';
+                // Only call focus if the element supports it (excludes select elements)
+                if (typeof input.focus === 'function') {
+                    input.focus();
+                }
                 updatePreview();
             });
         });
