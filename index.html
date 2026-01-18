@@ -479,6 +479,30 @@
                 </div>
 
                 <div class="input-group">
+                    <label for="company">Company Name</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="company" placeholder="Acme Corporation">
+                        <button class="clear-btn" data-input="company">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 4L4 12M4 4l8 8"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-wrapper">
+                        <input type="email" id="email" placeholder="jane.smith@company.com">
+                        <button class="clear-btn" data-input="email">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 4L4 12M4 4l8 8"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
                     <label for="phone">Phone Number</label>
                     <div class="input-wrapper">
                         <input type="tel" id="phone" placeholder="+1 (555) 123-4567">
@@ -593,6 +617,8 @@
         const inputs = {
             name: document.getElementById('name'),
             title: document.getElementById('title'),
+            company: document.getElementById('company'),
+            email: document.getElementById('email'),
             phone: document.getElementById('phone'),
             bookMe: document.getElementById('bookMe')
         };
@@ -744,9 +770,9 @@
         }
 
         function generateSignatureHTML(data) {
-            const { name, title, phone, bookMe } = data;
+            const { name, title, company, email, phone, bookMe } = data;
             
-            if (!name && !title && !phone && !bookMe) {
+            if (!name && !title && !company && !email && !phone && !bookMe) {
                 return '<p style="color: #7a6f65; font-style: italic;">Enter your details to see a preview</p>';
             }
 
@@ -762,9 +788,12 @@
 
             const escapedName = escapeHtml(name);
             const escapedTitle = escapeHtml(title);
+            const escapedCompany = escapeHtml(company);
+            const escapedEmail = escapeHtml(email);
             const escapedPhone = escapeHtml(phone);
 
             const contactParts = [];
+            if (escapedEmail) contactParts.push(`<a href="mailto:${escapeAttribute(email)}" style="color: #d97757; text-decoration: none;">${escapedEmail}</a>`);
             if (escapedPhone) contactParts.push(escapedPhone);
             if (bookMe) {
                 const sanitizedUrl = sanitizeUrl(bookMe);
@@ -798,6 +827,13 @@
                         </td>
                     </tr>
                     ` : ''}
+                    ${escapedCompany ? `
+                    <tr>
+                        <td style="color: #7a6f65; padding-bottom: 2px;">
+                            ${escapedCompany}
+                        </td>
+                    </tr>
+                    ` : ''}
                     ${contactLine ? `
                     <tr>
                         <td style="color: #7a6f65; padding-top: 8px;">
@@ -813,6 +849,8 @@
             const data = {
                 name: inputs.name.value.trim(),
                 title: inputs.title.value.trim(),
+                company: inputs.company.value.trim(),
+                email: inputs.email.value.trim(),
                 phone: inputs.phone.value.trim(),
                 bookMe: inputs.bookMe.value.trim()
             };
@@ -824,6 +862,8 @@
             const data = {
                 name: inputs.name.value.trim(),
                 title: inputs.title.value.trim(),
+                company: inputs.company.value.trim(),
+                email: inputs.email.value.trim(),
                 phone: inputs.phone.value.trim(),
                 bookMe: inputs.bookMe.value.trim()
             };
