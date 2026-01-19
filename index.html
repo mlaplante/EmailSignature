@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Content Security Policy: 'unsafe-inline' is required for this single-file application
+         where all styles and scripts are inline. For production, consider separating CSS/JS into external files. -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
     <title>Email Signature Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -1355,7 +1357,7 @@
             currentBrand = brandPresets[brandKey];
             
             // Update brand preview with sanitized color
-            const safeColor = sanitizeColor(currentBrand.accentColor);
+            const safeColor = sanitizeCSSColor(currentBrand.accentColor);
             brandColorDot.style.backgroundColor = safeColor;
             brandColorName.textContent = `${currentBrand.name} (${currentBrand.accentColor})`;
             
@@ -1551,21 +1553,12 @@
             return '';
         }
 
-        function sanitizeColor(color) {
-            if (!color || typeof color !== 'string') return '#000000';
-            
-            // Remove any whitespace
-            color = color.trim();
-            
-            // Only allow valid hex color format (#RGB or #RRGGBB)
-            if (/^#([0-9A-Fa-f]{3}){1,2}$/.test(color)) {
-                return color;
-            }
-            
-            // Fallback to black if invalid
-            return '#000000';
-        }
-
+        /**
+         * Sanitizes color values to prevent CSS injection attacks.
+         * Only allows valid hex color format (#RGB or #RRGGBB).
+         * @param {string} color - The color value to sanitize
+         * @returns {string} - The sanitized color or #000000 if invalid
+         */
         function sanitizeCSSColor(color) {
             if (!color || typeof color !== 'string') return '#000000';
             
@@ -2186,14 +2179,8 @@ ${signatureHTML}
             const subject = 'Email Signature Test';
             const body = `Here is your new email signature:\n\n${signatureHTML}`;
             
-            // Create mailto link with the signature (properly encoded to prevent injection)
+            // Create mailto link with properly encoded parameters to prevent injection
             const mailtoLink = `mailto:${encodeURIComponent(data.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            
-            // Validate that the link starts with mailto: to prevent protocol injection
-            if (!mailtoLink.startsWith('mailto:')) {
-                showToast('Invalid email format. Please try again.');
-                return;
-            }
             
             try {
                 window.location.href = mailtoLink;
@@ -2250,7 +2237,7 @@ ${signatureHTML}
             }
             inputs.brand.value = brandKey;
             currentBrand = brandPresets[brandKey];
-            const safeColor = sanitizeColor(currentBrand.accentColor);
+            const safeColor = sanitizeCSSColor(currentBrand.accentColor);
             brandColorDot.style.backgroundColor = safeColor;
             brandColorName.textContent = `${currentBrand.name} (${currentBrand.accentColor})`;
             updatePreview();
@@ -2440,7 +2427,7 @@ ${signatureHTML}
         });
 
         // Initialize
-        brandColorDot.style.backgroundColor = sanitizeColor(currentBrand.accentColor);
+        brandColorDot.style.backgroundColor = sanitizeCSSColor(currentBrand.accentColor);
         updatePreview();
         
         // Initialize history with current state
