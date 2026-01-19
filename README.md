@@ -13,6 +13,7 @@ The Email Signature Generator is a web-based application that helps you create b
 
 - **Clean, Modern Interface**: Beautiful user interface with a professional design aesthetic
 - **Live Preview**: See your email signature update in real-time as you type
+- **Flexible Layouts**: Choose between vertical or horizontal signature layouts to suit your preferences
 - **Email Client Preview Modes**: Switch between Standard, Gmail, and Outlook preview modes to see how your signature will appear in different email clients
 - **Dark/Light Theme**: Toggle between dark and light themes for comfortable viewing
 - **Multiple Fields**: Include your name, job title, phone number, and an optional booking link
@@ -32,19 +33,22 @@ The Email Signature Generator is a web-based application that helps you create b
 ### Getting Started
 
 1. Open `index.html` in your web browser or visit the [live demo](https://mlaplante.github.io/EmailSignature/)
-2. Fill in your information in the form fields:
+2. Choose your preferred signature layout:
+   - **Vertical**: Logo on top with information stacked below (traditional layout)
+   - **Horizontal**: Logo on the left with information displayed beside it (modern layout)
+3. Fill in your information in the form fields:
    - **Name**: Your full name
    - **Job Title**: Your professional title or role
    - **Phone Number**: Your contact number
    - **Book Me Link**: Optional link to your booking/scheduling page (e.g., Calendly)
    - **Custom Logo**: Optional image to personalize your signature
-3. Use the preview mode tabs to see how your signature will look:
+4. Use the preview mode tabs to see how your signature will look:
    - **Standard**: Default professional appearance
    - **Gmail**: How your signature will appear in Gmail with Arial font and Gmail-specific styling
    - **Outlook**: How your signature will appear in Outlook with Segoe UI font and Outlook-specific styling
-4. Watch your signature preview update in real-time
-5. Click "Copy Signature" to copy the formatted signature to your clipboard (always copies the standard version for best compatibility)
-6. Click "How to Import?" to see instructions for your email client
+5. Watch your signature preview update in real-time
+6. Click "Copy Signature" to copy the formatted signature to your clipboard in your selected layout
+7. Click "How to Import?" to see instructions for your email client
 
 ### Importing to Email Clients
 

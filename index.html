@@ -808,10 +808,12 @@
         const clearBtns = document.querySelectorAll('.clear-btn');
         const previewTabs = document.querySelectorAll('.preview-tab');
         let currentPreviewMode = 'standard';
-        let currentLayout = 'vertical';
+        
+        // Initialize layout from the checked radio button
+        const layoutRadios = document.querySelectorAll('input[name="layout"]');
+        let currentLayout = document.querySelector('input[name="layout"]:checked')?.value || 'vertical';
 
         // Layout selection
-        const layoutRadios = document.querySelectorAll('input[name="layout"]');
         layoutRadios.forEach(radio => {
             radio.addEventListener('change', (e) => {
                 currentLayout = e.target.value;
