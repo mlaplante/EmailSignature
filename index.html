@@ -225,10 +225,30 @@
             transition: all 0.2s ease;
         }
 
-        input:focus {
+        input:focus,
+        textarea:focus {
             outline: none;
             border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.1);
+        }
+
+        .input-error {
+            border-color: #ef4444 !important;
+        }
+
+        .input-success {
+            border-color: #22c55e !important;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
         }
 
         .clear-btn {
@@ -317,6 +337,26 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: max-width 0.3s ease;
+        }
+
+        .preview-content.mobile-view {
+            max-width: 375px;
+            margin: 0 auto;
+        }
+
+        .preview-content.plaintext-preview {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            text-align: left;
+            align-items: flex-start;
+        }
+
+        [data-theme="dark"] .preview-content.plaintext-preview {
+            background: #0d0d0d;
+            color: #e0e0e0;
         }
 
         .preview-content.gmail-preview {
@@ -785,16 +825,65 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="input-group">
+                    <label for="address">Office Address (Optional)</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="address" placeholder="123 Main St, City, State 12345">
+                        <button class="clear-btn" data-input="address">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 4L4 12M4 4l8 8"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="disclaimer">Legal Disclaimer (Optional)</label>
+                    <textarea id="disclaimer" placeholder="Enter legal disclaimer text (for regulated industries)" rows="3" style="width: 100%; padding: 0.875rem 1rem; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; font-family: 'DM Sans', sans-serif; background: var(--bg-primary); color: var(--text-primary); resize: vertical; transition: all 0.2s ease;"></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="fontSize">Font Size</label>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <input type="range" id="fontSize" min="10" max="18" value="14" step="1" style="flex: 1;">
+                        <span id="fontSizeValue" style="color: var(--text-muted); font-size: 0.9rem; min-width: 3rem;">14px</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; text-transform: none;">
+                        <input type="checkbox" id="showIcons" checked style="width: auto; cursor: pointer;">
+                        <span>Show icons for phone/email</span>
+                    </label>
+                </div>
             </div>
         </div>
 
         <div class="preview-section">
             <div class="preview-header">
                 <h2>Preview</h2>
-                <div class="preview-tabs">
-                    <button class="preview-tab active" data-preview="standard">Standard</button>
-                    <button class="preview-tab" data-preview="gmail">Gmail</button>
-                    <button class="preview-tab" data-preview="outlook">Outlook</button>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div class="preview-tabs">
+                        <button class="preview-tab active" data-preview="standard">Standard</button>
+                        <button class="preview-tab" data-preview="gmail">Gmail</button>
+                        <button class="preview-tab" data-preview="outlook">Outlook</button>
+                        <button class="preview-tab" data-preview="plaintext">Plain Text</button>
+                    </div>
+                    <div class="preview-tabs">
+                        <button class="preview-tab" data-device="desktop" title="Desktop View">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="2" width="14" height="10" rx="1"/>
+                                <path d="M5 15h6M8 12v3"/>
+                            </svg>
+                        </button>
+                        <button class="preview-tab active" data-device="mobile" title="Mobile View">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="4" y="1" width="8" height="14" rx="1"/>
+                                <path d="M8 12h.01"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="preview-content" id="previewContent">
@@ -808,9 +897,13 @@
                 <button class="btn-secondary" id="howToBtn">How to Import?</button>
             </div>
             <div class="button-group button-group-secondary">
+                <button class="btn-secondary" id="sendTestBtn">Send Test Email</button>
                 <button class="btn-secondary" id="saveBtn">Save Signature</button>
                 <button class="btn-secondary" id="loadBtn">Load Saved</button>
                 <button class="btn-secondary" id="clearBtn">Clear Saved</button>
+            </div>
+            <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 1rem;">
+                <p>Keyboard shortcuts: <strong>Ctrl/Cmd+S</strong> to save, <strong>Ctrl/Cmd+C</strong> to copy, <strong>Ctrl/Cmd+Z</strong> to undo, <strong>Ctrl/Cmd+Shift+Z</strong> to redo</p>
             </div>
         </div>
     </div>
@@ -953,7 +1046,9 @@
             company: document.getElementById('company'),
             email: document.getElementById('email'),
             phone: document.getElementById('phone'),
-            bookMe: document.getElementById('bookMe')
+            bookMe: document.getElementById('bookMe'),
+            address: document.getElementById('address'),
+            disclaimer: document.getElementById('disclaimer')
         };
 
         const brandColorDot = document.getElementById('brandColorDot');
@@ -967,10 +1062,19 @@
         const removeLogo = document.getElementById('removeLogo');
         let logoDataUrl = null;
 
+        // New controls
+        const fontSizeInput = document.getElementById('fontSize');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const showIconsCheckbox = document.getElementById('showIcons');
+        let currentFontSize = 14;
+        let showIcons = true;
+        let currentDeviceView = 'mobile';
+
         const preview = document.getElementById('signaturePreview');
         const previewContent = document.getElementById('previewContent');
         const copyBtn = document.getElementById('copyBtn');
         const howToBtn = document.getElementById('howToBtn');
+        const sendTestBtn = document.getElementById('sendTestBtn');
         const modal = document.getElementById('howToModal');
         const modalClose = document.getElementById('modalClose');
         const toast = document.getElementById('toast');
@@ -978,7 +1082,12 @@
         const clearBtns = document.querySelectorAll('.clear-btn');
         const previewTabs = document.querySelectorAll('.preview-tab');
         let currentPreviewMode = 'standard';
-        
+
+        // Undo/Redo state management
+        let history = [];
+        let historyIndex = -1;
+        const MAX_HISTORY = 50;
+
         // Initialize layout from the checked radio button
         const layoutRadios = document.querySelectorAll('input[name="layout"]');
         let currentLayout = document.querySelector('input[name="layout"]:checked')?.value || 'vertical';
@@ -987,9 +1096,241 @@
         layoutRadios.forEach(radio => {
             radio.addEventListener('change', (e) => {
                 currentLayout = e.target.value;
+                saveToHistory();
                 updatePreview();
             });
         });
+
+        // Font size control
+        fontSizeInput.addEventListener('input', (e) => {
+            currentFontSize = parseInt(e.target.value);
+            fontSizeValue.textContent = `${currentFontSize}px`;
+            updatePreview();
+        });
+
+        // Show icons checkbox
+        showIconsCheckbox.addEventListener('change', (e) => {
+            showIcons = e.target.checked;
+            updatePreview();
+        });
+
+        // Validation functions
+        function validateEmail(email) {
+            if (!email) return { valid: true, message: '' };
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const valid = emailRegex.test(email);
+            return { 
+                valid, 
+                message: valid ? '' : 'Invalid email format' 
+            };
+        }
+
+        function validatePhone(phone) {
+            if (!phone) return { valid: true, message: '' };
+            // Accept various phone formats: +1 (555) 123-4567, 555-123-4567, etc.
+            const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+            const hasEnoughDigits = phone.replace(/\D/g, '').length >= 10;
+            const valid = phoneRegex.test(phone) && hasEnoughDigits;
+            return { 
+                valid, 
+                message: valid ? '' : 'Invalid phone format (need at least 10 digits)' 
+            };
+        }
+
+        function validateUrl(url) {
+            if (!url) return { valid: true, message: '' };
+            try {
+                const parsedUrl = new URL(url);
+                const valid = (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') && parsedUrl.hostname;
+                return { 
+                    valid, 
+                    message: valid ? '' : 'Invalid URL format (must start with http:// or https://)' 
+                };
+            } catch (e) {
+                return { valid: false, message: 'Invalid URL format' };
+            }
+        }
+
+        function formatPhoneNumber(phone) {
+            // Remove all non-digit characters
+            const digits = phone.replace(/\D/g, '');
+            
+            // Format based on number of digits
+            if (digits.length === 10) {
+                // US format: (555) 123-4567
+                return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+            } else if (digits.length === 11 && digits[0] === '1') {
+                // US format with country code: +1 (555) 123-4567
+                return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+            } else if (digits.length > 10) {
+                // International format: +XX (XXX) XXX-XXXX
+                return `+${digits.slice(0, digits.length - 10)} (${digits.slice(-10, -7)}) ${digits.slice(-7, -4)}-${digits.slice(-4)}`;
+            }
+            
+            return phone; // Return original if doesn't match expected patterns
+        }
+
+        // Auto-format phone number as user types
+        let phoneFormatTimeout;
+        inputs.phone.addEventListener('input', (e) => {
+            clearTimeout(phoneFormatTimeout);
+            phoneFormatTimeout = setTimeout(() => {
+                const cursorPos = e.target.selectionStart;
+                const originalLength = e.target.value.length;
+                const formatted = formatPhoneNumber(e.target.value);
+                e.target.value = formatted;
+                
+                // Adjust cursor position after formatting
+                const lengthDiff = formatted.length - originalLength;
+                e.target.setSelectionRange(cursorPos + lengthDiff, cursorPos + lengthDiff);
+            }, 500);
+        });
+
+        // Input validation handlers
+        inputs.email.addEventListener('blur', (e) => {
+            const result = validateEmail(e.target.value.trim());
+            if (!result.valid) {
+                e.target.classList.add('input-error');
+                showToast(result.message);
+            } else {
+                e.target.classList.remove('input-error');
+                if (e.target.value) e.target.classList.add('input-success');
+            }
+        });
+
+        inputs.email.addEventListener('focus', (e) => {
+            e.target.classList.remove('input-error', 'input-success');
+        });
+
+        inputs.phone.addEventListener('blur', (e) => {
+            const result = validatePhone(e.target.value.trim());
+            if (!result.valid) {
+                e.target.classList.add('input-error');
+                showToast(result.message);
+            } else {
+                e.target.classList.remove('input-error');
+                if (e.target.value) e.target.classList.add('input-success');
+            }
+        });
+
+        inputs.phone.addEventListener('focus', (e) => {
+            e.target.classList.remove('input-error', 'input-success');
+        });
+
+        inputs.bookMe.addEventListener('blur', (e) => {
+            const result = validateUrl(e.target.value.trim());
+            if (!result.valid) {
+                e.target.classList.add('input-error');
+                showToast(result.message);
+            } else {
+                e.target.classList.remove('input-error');
+                if (e.target.value) e.target.classList.add('input-success');
+            }
+        });
+
+        inputs.bookMe.addEventListener('focus', (e) => {
+            e.target.classList.remove('input-error', 'input-success');
+        });
+
+        // Undo/Redo functionality
+        function saveToHistory() {
+            const state = getCurrentSignatureData();
+            
+            // Remove any states after current index
+            history = history.slice(0, historyIndex + 1);
+            
+            // Add new state
+            history.push(JSON.stringify(state));
+            
+            // Limit history size
+            if (history.length > MAX_HISTORY) {
+                history.shift();
+            } else {
+                historyIndex++;
+            }
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                const state = JSON.parse(history[historyIndex]);
+                restoreState(state);
+                showToast('Undo');
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                const state = JSON.parse(history[historyIndex]);
+                restoreState(state);
+                showToast('Redo');
+            }
+        }
+
+        function restoreState(state) {
+            // Restore all inputs
+            if (state.brand) setBrand(state.brand);
+            if (state.name !== undefined) inputs.name.value = state.name;
+            if (state.title !== undefined) inputs.title.value = state.title;
+            if (state.company !== undefined) inputs.company.value = state.company;
+            if (state.email !== undefined) inputs.email.value = state.email;
+            if (state.phone !== undefined) inputs.phone.value = state.phone;
+            if (state.bookMe !== undefined) inputs.bookMe.value = state.bookMe;
+            if (state.address !== undefined) inputs.address.value = state.address;
+            if (state.disclaimer !== undefined) inputs.disclaimer.value = state.disclaimer;
+            
+            if (state.layout) {
+                currentLayout = state.layout;
+                const layoutRadio = document.getElementById(`layout${state.layout.charAt(0).toUpperCase() + state.layout.slice(1)}`);
+                if (layoutRadio) layoutRadio.checked = true;
+            }
+            
+            if (state.fontSize !== undefined) {
+                currentFontSize = state.fontSize;
+                fontSizeInput.value = currentFontSize;
+                fontSizeValue.textContent = `${currentFontSize}px`;
+            }
+            
+            if (state.showIcons !== undefined) {
+                showIcons = state.showIcons;
+                showIconsCheckbox.checked = showIcons;
+            }
+            
+            if (state.logoDataUrl) {
+                logoDataUrl = state.logoDataUrl;
+                logoImage.src = logoDataUrl;
+                logoPreview.style.display = 'block';
+                uploadBtn.style.display = 'none';
+            } else {
+                logoDataUrl = null;
+                logoPreview.style.display = 'none';
+                uploadBtn.style.display = 'inline-flex';
+            }
+            
+            updatePreview();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const modKey = isMac ? e.metaKey : e.ctrlKey;
+            
+            if (modKey && e.key === 's') {
+                e.preventDefault();
+                saveSignatureData();
+            } else if (modKey && e.key === 'c' && !e.target.matches('input, textarea')) {
+                e.preventDefault();
+                copySignature();
+            } else if (modKey && e.shiftKey && (e.key === 'z' || e.key === 'Z')) {
+                e.preventDefault();
+                redo();
+            } else if (modKey && (e.key === 'z' || e.key === 'Z')) {
+                e.preventDefault();
+                undo();
+            }
+        });
+
         // Theme toggle
         const sunIcon = document.querySelector('.sun-icon');
         const moonIcon = document.querySelector('.moon-icon');
@@ -1022,23 +1363,43 @@
         // Preview tab switching
         previewTabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                previewTabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                currentPreviewMode = tab.getAttribute('data-preview');
-                updatePreviewMode();
-                updatePreview();
+                const previewType = tab.getAttribute('data-preview');
+                const deviceType = tab.getAttribute('data-device');
+                
+                if (previewType) {
+                    // Remove active from preview mode tabs only
+                    document.querySelectorAll('[data-preview]').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentPreviewMode = previewType;
+                    updatePreviewMode();
+                    updatePreview();
+                } else if (deviceType) {
+                    // Remove active from device tabs only
+                    document.querySelectorAll('[data-device]').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentDeviceView = deviceType;
+                    updateDeviceView();
+                }
             });
         });
 
         function updatePreviewMode() {
-            previewContent.classList.remove('gmail-preview', 'outlook-preview');
+            previewContent.classList.remove('gmail-preview', 'outlook-preview', 'plaintext-preview');
             if (currentPreviewMode === 'gmail') {
                 previewContent.classList.add('gmail-preview');
             } else if (currentPreviewMode === 'outlook') {
                 previewContent.classList.add('outlook-preview');
+            } else if (currentPreviewMode === 'plaintext') {
+                previewContent.classList.add('plaintext-preview');
             }
         }
 
+        function updateDeviceView() {
+            previewContent.classList.remove('mobile-view');
+            if (currentDeviceView === 'mobile') {
+                previewContent.classList.add('mobile-view');
+            }
+        }
 
         // Clear button functionality
         clearBtns.forEach(btn => {
@@ -1072,6 +1433,17 @@
                     clearBtn.classList.remove('visible');
                 }
                 updatePreview();
+            });
+        });
+
+        // Save to history on input changes (debounced)
+        let historyTimeout;
+        Object.entries(inputs).forEach(([key, input]) => {
+            input.addEventListener('input', () => {
+                clearTimeout(historyTimeout);
+                historyTimeout = setTimeout(() => {
+                    saveToHistory();
+                }, 1000); // Save after 1 second of no typing
             });
         });
 
@@ -1173,7 +1545,7 @@
         }
 
         function prepareSignatureData(data) {
-            const { name, title, company, email, phone, bookMe } = data;
+            const { name, title, company, email, phone, bookMe, address, disclaimer } = data;
             
             const logoSVG = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="40" height="40" rx="8" fill="${currentBrand.accentColor}"/>
@@ -1190,13 +1562,19 @@
             const escapedCompany = escapeHtml(company);
             const escapedEmail = escapeHtml(email);
             const escapedPhone = escapeHtml(phone);
+            const escapedAddress = escapeHtml(address);
+            const escapedDisclaimer = escapeHtml(disclaimer);
+
+            // Email/Phone icons (optional)
+            const emailIcon = showIcons ? '📧 ' : '';
+            const phoneIcon = showIcons ? '📞 ' : '';
 
             const contactParts = [];
             if (email) {
                 const escapedEmailHref = escapeAttribute(email);
-                contactParts.push(`<a href="mailto:${escapedEmailHref}" style="color: ${currentBrand.accentColor}; text-decoration: none;">${escapedEmail}</a>`);
+                contactParts.push(`<a href="mailto:${escapedEmailHref}" style="color: ${currentBrand.accentColor}; text-decoration: none;">${emailIcon}${escapedEmail}</a>`);
             }
-            if (escapedPhone) contactParts.push(escapedPhone);
+            if (escapedPhone) contactParts.push(`${phoneIcon}${escapedPhone}`);
             if (bookMe) {
                 const sanitizedUrl = sanitizeUrl(bookMe);
                 if (sanitizedUrl) {
@@ -1206,7 +1584,7 @@
             }
             const contactLine = contactParts.join(' • ');
 
-            return { escapedName, escapedTitle, escapedCompany, contactLine, logoHTML };
+            return { escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer };
         }
 
         function getInputData() {
@@ -1216,15 +1594,21 @@
                 company: inputs.company.value.trim(),
                 email: inputs.email.value.trim(),
                 phone: inputs.phone.value.trim(),
-                bookMe: inputs.bookMe.value.trim()
+                bookMe: inputs.bookMe.value.trim(),
+                address: inputs.address.value.trim(),
+                disclaimer: inputs.disclaimer.value.trim()
             };
         }
 
         function generateSignatureHTML(data) {
-            const { name, title, company, email, phone, bookMe } = data;
+            const { name, title, company, email, phone, bookMe, address, disclaimer } = data;
             
-            if (!name && !title && !company && !email && !phone && !bookMe) {
+            if (!name && !title && !company && !email && !phone && !bookMe && !address && !disclaimer) {
                 return `<p style="color: ${currentBrand.mutedColor}; font-style: italic;">Enter your details to see a preview</p>`;
+            }
+
+            if (currentPreviewMode === 'plaintext') {
+                return generatePlainTextSignature(data);
             }
 
             const signatureData = prepareSignatureData(data);
@@ -1239,12 +1623,34 @@
             }
         }
 
-        function generateStandardSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML }) {
+        function generatePlainTextSignature(data) {
+            const { name, title, company, email, phone, bookMe, address, disclaimer } = data;
+            let text = '';
+            
+            if (name) text += name + '\n';
+            if (title) text += title + '\n';
+            if (company) text += company + '\n';
+            if (address) text += address + '\n';
+            
+            text += '\n';
+            
+            if (email) text += 'Email: ' + email + '\n';
+            if (phone) text += 'Phone: ' + phone + '\n';
+            if (bookMe) text += 'Book a Meeting: ' + bookMe + '\n';
+            
+            if (disclaimer) {
+                text += '\n' + disclaimer;
+            }
+            
+            return text || 'Enter your details to see a preview';
+        }
+
+        function generateStandardSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
             if (currentLayout === 'horizontal') {
-                return generateStandardSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML });
+                return generateStandardSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer });
             }
             return `
-                <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 1.5; color: ${currentBrand.textColor};">
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: ${currentFontSize}px; line-height: 1.5; color: ${currentBrand.textColor};">
                     <tr>
                         <td style="padding-bottom: 12px;">
                             <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
@@ -1254,7 +1660,7 @@
                     </tr>
                     ${escapedName ? `
                     <tr>
-                        <td style="font-weight: 600; font-size: 16px; padding-bottom: 2px; color: ${currentBrand.textColor};">
+                        <td style="font-weight: 600; font-size: ${currentFontSize + 2}px; padding-bottom: 2px; color: ${currentBrand.textColor};">
                             ${escapedName}
                         </td>
                     </tr>
@@ -1264,6 +1670,99 @@
                         <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
                             ${escapedTitle}
                         </td>
+                    </tr>
+                    ` : ''}
+                    ${escapedCompany ? `
+                    <tr>
+                        <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
+                            ${escapedCompany}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${escapedAddress ? `
+                    <tr>
+                        <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
+                            ${escapedAddress}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${contactLine ? `
+                    <tr>
+                        <td style="color: ${currentBrand.mutedColor}; padding-top: 8px;">
+                            ${contactLine}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${escapedDisclaimer ? `
+                    <tr>
+                        <td style="color: ${currentBrand.mutedColor}; padding-top: 12px; font-size: ${currentFontSize - 2}px; font-style: italic; border-top: 1px solid ${currentBrand.mutedColor}; padding-top: 8px; margin-top: 8px;">
+                            ${escapedDisclaimer}
+                        </td>
+                    </tr>
+                    ` : ''}
+                </table>
+            `;
+        }
+
+        function generateStandardSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
+            return `
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: ${currentFontSize}px; line-height: 1.5; color: ${currentBrand.textColor};">
+                    <tr>
+                        <td style="padding-right: 16px; vertical-align: top;">
+                            <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
+                                ${logoHTML}
+                            </a>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <table cellpadding="0" cellspacing="0" border="0;">
+                                ${escapedName ? `
+                                <tr>
+                                    <td style="font-weight: 600; font-size: ${currentFontSize + 2}px; padding-bottom: 2px; color: ${currentBrand.textColor};">
+                                        ${escapedName}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedTitle ? `
+                                <tr>
+                                    <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
+                                        ${escapedTitle}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedCompany ? `
+                                <tr>
+                                    <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
+                                        ${escapedCompany}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedAddress ? `
+                                <tr>
+                                    <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
+                                        ${escapedAddress}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${contactLine ? `
+                                <tr>
+                                    <td style="color: ${currentBrand.mutedColor}; padding-top: 8px;">
+                                        ${contactLine}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedDisclaimer ? `
+                                <tr>
+                                    <td style="color: ${currentBrand.mutedColor}; padding-top: 12px; font-size: ${currentFontSize - 2}px; font-style: italic;">
+                                        ${escapedDisclaimer}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            `;
+        }
                     </tr>
                     ` : ''}
                     ${escapedCompany ? `
@@ -1330,13 +1829,14 @@
             `;
         }
 
-        function generateGmailSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML }) {
+        function generateGmailSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
             if (currentLayout === 'horizontal') {
-                return generateGmailSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML });
+                return generateGmailSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer });
             }
             // Gmail uses Arial and has specific rendering characteristics
+            const baseFontSize = Math.max(11, currentFontSize - 1);
             return `
-                <table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 1.4; color: #000000;">
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; font-size: ${baseFontSize}px; line-height: 1.4; color: #000000;">
                     <tr>
                         <td style="padding-bottom: 10px;">
                             <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
@@ -1346,29 +1846,43 @@
                     </tr>
                     ${escapedName ? `
                     <tr>
-                        <td style="font-weight: bold; font-size: 14px; padding-bottom: 4px; color: #000000;">
+                        <td style="font-weight: bold; font-size: ${baseFontSize + 1}px; padding-bottom: 4px; color: #000000;">
                             ${escapedName}
                         </td>
                     </tr>
                     ` : ''}
                     ${escapedTitle ? `
                     <tr>
-                        <td style="color: #5f6368; padding-bottom: 4px; font-size: 13px;">
+                        <td style="color: #5f6368; padding-bottom: 4px; font-size: ${baseFontSize}px;">
                             ${escapedTitle}
                         </td>
                     </tr>
                     ` : ''}
                     ${escapedCompany ? `
                     <tr>
-                        <td style="color: #5f6368; padding-bottom: 4px; font-size: 13px;">
+                        <td style="color: #5f6368; padding-bottom: 4px; font-size: ${baseFontSize}px;">
                             ${escapedCompany}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${escapedAddress ? `
+                    <tr>
+                        <td style="color: #5f6368; padding-bottom: 4px; font-size: ${baseFontSize}px;">
+                            ${escapedAddress}
                         </td>
                     </tr>
                     ` : ''}
                     ${contactLine ? `
                     <tr>
-                        <td style="color: #5f6368; padding-top: 6px; font-size: 13px;">
+                        <td style="color: #5f6368; padding-top: 6px; font-size: ${baseFontSize}px;">
                             ${contactLine}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${escapedDisclaimer ? `
+                    <tr>
+                        <td style="color: #5f6368; padding-top: 10px; font-size: ${baseFontSize - 1}px; font-style: italic;">
+                            ${escapedDisclaimer}
                         </td>
                     </tr>
                     ` : ''}
@@ -1376,9 +1890,10 @@
             `;
         }
 
-        function generateGmailSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML }) {
+        function generateGmailSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
+            const baseFontSize = Math.max(11, currentFontSize - 1);
             return `
-                <table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 1.4; color: #000000;">
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; font-size: ${baseFontSize}px; line-height: 1.4; color: #000000;">
                     <tr>
                         <td style="padding-right: 14px; vertical-align: top;">
                             <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
@@ -1389,29 +1904,43 @@
                             <table cellpadding="0" cellspacing="0" border="0">
                                 ${escapedName ? `
                                 <tr>
-                                    <td style="font-weight: bold; font-size: 14px; padding-bottom: 4px; color: #000000;">
+                                    <td style="font-weight: bold; font-size: ${baseFontSize + 1}px; padding-bottom: 4px; color: #000000;">
                                         ${escapedName}
                                     </td>
                                 </tr>
                                 ` : ''}
                                 ${escapedTitle ? `
                                 <tr>
-                                    <td style="color: #5f6368; padding-bottom: 4px; font-size: 13px;">
+                                    <td style="color: #5f6368; padding-bottom: 4px; font-size: ${baseFontSize}px;">
                                         ${escapedTitle}
                                     </td>
                                 </tr>
                                 ` : ''}
                                 ${escapedCompany ? `
                                 <tr>
-                                    <td style="color: #5f6368; padding-bottom: 4px; font-size: 13px;">
+                                    <td style="color: #5f6368; padding-bottom: 4px; font-size: ${baseFontSize}px;">
                                         ${escapedCompany}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedAddress ? `
+                                <tr>
+                                    <td style="color: #5f6368; padding-bottom: 4px; font-size: ${baseFontSize}px;">
+                                        ${escapedAddress}
                                     </td>
                                 </tr>
                                 ` : ''}
                                 ${contactLine ? `
                                 <tr>
-                                    <td style="color: #5f6368; padding-top: 6px; font-size: 13px;">
+                                    <td style="color: #5f6368; padding-top: 6px; font-size: ${baseFontSize}px;">
                                         ${contactLine}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedDisclaimer ? `
+                                <tr>
+                                    <td style="color: #5f6368; padding-top: 10px; font-size: ${baseFontSize - 1}px; font-style: italic;">
+                                        ${escapedDisclaimer}
                                     </td>
                                 </tr>
                                 ` : ''}
@@ -1422,13 +1951,14 @@
             `;
         }
 
-        function generateOutlookSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML }) {
+        function generateOutlookSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
             if (currentLayout === 'horizontal') {
-                return generateOutlookSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML });
+                return generateOutlookSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer });
             }
             // Outlook uses Calibri/Segoe UI and has different rendering
+            const baseFontSize = Math.max(10, currentFontSize - 3);
             return `
-                <table cellpadding="0" cellspacing="0" border="0" style="font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11pt; line-height: 1.35; color: #000000;">
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: 'Segoe UI', Tahoma, sans-serif; font-size: ${baseFontSize}pt; line-height: 1.35; color: #000000;">
                     <tr>
                         <td style="padding-bottom: 10px;">
                             <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
@@ -1438,29 +1968,43 @@
                     </tr>
                     ${escapedName ? `
                     <tr>
-                        <td style="font-weight: 600; font-size: 12pt; padding-bottom: 3px; color: #0078d4;">
+                        <td style="font-weight: 600; font-size: ${baseFontSize + 1}pt; padding-bottom: 3px; color: #0078d4;">
                             ${escapedName}
                         </td>
                     </tr>
                     ` : ''}
                     ${escapedTitle ? `
                     <tr>
-                        <td style="color: #666666; padding-bottom: 3px; font-size: 10pt;">
+                        <td style="color: #666666; padding-bottom: 3px; font-size: ${baseFontSize}pt;">
                             ${escapedTitle}
                         </td>
                     </tr>
                     ` : ''}
                     ${escapedCompany ? `
                     <tr>
-                        <td style="color: #666666; padding-bottom: 3px; font-size: 10pt;">
+                        <td style="color: #666666; padding-bottom: 3px; font-size: ${baseFontSize}pt;">
                             ${escapedCompany}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${escapedAddress ? `
+                    <tr>
+                        <td style="color: #666666; padding-bottom: 3px; font-size: ${baseFontSize}pt;">
+                            ${escapedAddress}
                         </td>
                     </tr>
                     ` : ''}
                     ${contactLine ? `
                     <tr>
-                        <td style="color: #666666; padding-top: 6px; font-size: 10pt;">
+                        <td style="color: #666666; padding-top: 6px; font-size: ${baseFontSize}pt;">
                             ${contactLine}
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${escapedDisclaimer ? `
+                    <tr>
+                        <td style="color: #666666; padding-top: 10px; font-size: ${baseFontSize - 1}pt; font-style: italic;">
+                            ${escapedDisclaimer}
                         </td>
                     </tr>
                     ` : ''}
@@ -1468,7 +2012,66 @@
             `;
         }
 
-        function generateOutlookSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML }) {
+        function generateOutlookSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
+            const baseFontSize = Math.max(10, currentFontSize - 3);
+            return `
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: 'Segoe UI', Tahoma, sans-serif; font-size: ${baseFontSize}pt; line-height: 1.35; color: #000000;">
+                    <tr>
+                        <td style="padding-right: 14px; vertical-align: top;">
+                            <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
+                                ${logoHTML}
+                            </a>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <table cellpadding="0" cellspacing="0" border="0">
+                                ${escapedName ? `
+                                <tr>
+                                    <td style="font-weight: 600; font-size: ${baseFontSize + 1}pt; padding-bottom: 3px; color: #0078d4;">
+                                        ${escapedName}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedTitle ? `
+                                <tr>
+                                    <td style="color: #666666; padding-bottom: 3px; font-size: ${baseFontSize}pt;">
+                                        ${escapedTitle}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedCompany ? `
+                                <tr>
+                                    <td style="color: #666666; padding-bottom: 3px; font-size: ${baseFontSize}pt;">
+                                        ${escapedCompany}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedAddress ? `
+                                <tr>
+                                    <td style="color: #666666; padding-bottom: 3px; font-size: ${baseFontSize}pt;">
+                                        ${escapedAddress}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${contactLine ? `
+                                <tr>
+                                    <td style="color: #666666; padding-top: 6px; font-size: ${baseFontSize}pt;">
+                                        ${contactLine}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedDisclaimer ? `
+                                <tr>
+                                    <td style="color: #666666; padding-top: 10px; font-size: ${baseFontSize - 1}pt; font-style: italic;">
+                                        ${escapedDisclaimer}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            `;
+        }
             return `
                 <table cellpadding="0" cellspacing="0" border="0" style="font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11pt; line-height: 1.35; color: #000000;">
                     <tr>
@@ -1611,12 +2214,51 @@ ${signatureHTML}
         const exportBtn = document.getElementById('exportBtn');
         exportBtn.addEventListener('click', exportSignatureHTML);
         howToBtn.addEventListener('click', () => modal.classList.add('active'));
+        sendTestBtn.addEventListener('click', sendTestEmail);
         modalClose.addEventListener('click', () => modal.classList.remove('active'));
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.classList.remove('active');
             }
         });
+
+        function sendTestEmail() {
+            const data = getInputData();
+            
+            if (!data.email) {
+                showToast('Please enter your email address to send a test email.');
+                return;
+            }
+
+            const emailValidation = validateEmail(data.email);
+            if (!emailValidation.valid) {
+                showToast('Please enter a valid email address.');
+                return;
+            }
+
+            const signatureData = prepareSignatureData(data);
+            let signatureHTML;
+            
+            if (currentLayout === 'horizontal') {
+                signatureHTML = generateStandardSignatureHorizontal(signatureData);
+            } else {
+                signatureHTML = generateStandardSignature(signatureData);
+            }
+
+            const subject = 'Email Signature Test';
+            const body = `Here is your new email signature:\n\n${signatureHTML}`;
+            
+            // Create mailto link with the signature
+            const mailtoLink = `mailto:${encodeURIComponent(data.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            try {
+                window.location.href = mailtoLink;
+                showToast('Opening your email client...');
+            } catch (e) {
+                showToast('Could not open email client. Please copy your signature manually.');
+            }
+        }
+
 
         // Save/Load functionality
         const STORAGE_KEY = 'emailSignatureData';
@@ -1633,8 +2275,12 @@ ${signatureHTML}
                 email: inputs.email.value,
                 phone: inputs.phone.value,
                 bookMe: inputs.bookMe.value,
+                address: inputs.address.value,
+                disclaimer: inputs.disclaimer.value,
                 layout: currentLayout,
-                logoDataUrl: logoDataUrl
+                logoDataUrl: logoDataUrl,
+                fontSize: currentFontSize,
+                showIcons: showIcons
             };
         }
 
@@ -1647,7 +2293,11 @@ ${signatureHTML}
                    !inputs.email.value && 
                    !inputs.phone.value && 
                    !inputs.bookMe.value &&
-                   !logoDataUrl;
+                   !inputs.address.value &&
+                   !inputs.disclaimer.value &&
+                   !logoDataUrl &&
+                   currentFontSize === 14 &&
+                   showIcons === true;
         }
 
         function setBrand(brandKey) {
@@ -1709,6 +2359,12 @@ ${signatureHTML}
                 if (data.bookMe !== undefined && typeof data.bookMe === 'string') {
                     inputs.bookMe.value = data.bookMe.substring(0, 200);
                 }
+                if (data.address !== undefined && typeof data.address === 'string') {
+                    inputs.address.value = data.address.substring(0, 200);
+                }
+                if (data.disclaimer !== undefined && typeof data.disclaimer === 'string') {
+                    inputs.disclaimer.value = data.disclaimer.substring(0, 500);
+                }
                 
                 // Load layout with validation
                 if (data.layout && (data.layout === 'vertical' || data.layout === 'horizontal')) {
@@ -1717,6 +2373,19 @@ ${signatureHTML}
                     if (layoutRadio) {
                         layoutRadio.checked = true;
                     }
+                }
+
+                // Load font size
+                if (data.fontSize !== undefined && typeof data.fontSize === 'number' && data.fontSize >= 10 && data.fontSize <= 18) {
+                    currentFontSize = data.fontSize;
+                    fontSizeInput.value = currentFontSize;
+                    fontSizeValue.textContent = `${currentFontSize}px`;
+                }
+
+                // Load show icons
+                if (data.showIcons !== undefined && typeof data.showIcons === 'boolean') {
+                    showIcons = data.showIcons;
+                    showIconsCheckbox.checked = showIcons;
                 }
                 
                 // Load logo with enhanced validation
@@ -1826,6 +2495,9 @@ ${signatureHTML}
         // Initialize
         brandColorDot.style.backgroundColor = currentBrand.accentColor;
         updatePreview();
+        
+        // Initialize history with current state
+        saveToHistory();
         
         // Auto-load saved data on page load only if form is empty
         if (isFormEmpty()) {
