@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Content Security Policy: 'unsafe-inline' is required for this single-file application
+         where all styles and scripts are inline. For production, consider separating CSS/JS into external files. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
     <title>Email Signature Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -808,7 +811,7 @@
                 <div class="input-group">
                     <label for="logo">Custom Logo</label>
                     <div class="logo-upload-wrapper">
-                        <input type="file" id="logo" accept="image/*" style="display: none;">
+                        <input type="file" id="logo" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;">
                         <button class="btn-upload" id="uploadBtn">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M14 10v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2M11 5L8 2m0 0L5 5m3-3v9"/>
@@ -1353,8 +1356,9 @@
             
             currentBrand = brandPresets[brandKey];
             
-            // Update brand preview
-            brandColorDot.style.backgroundColor = currentBrand.accentColor;
+            // Update brand preview with sanitized color
+            const safeColor = sanitizeCSSColor(currentBrand.accentColor);
+            brandColorDot.style.backgroundColor = safeColor;
             brandColorName.textContent = `${currentBrand.name} (${currentBrand.accentColor})`;
             
             updatePreview();
@@ -1456,21 +1460,23 @@
             const file = e.target.files[0];
             if (file) {
                 // Validate file type
-                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-                const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
                 const fileName = file.name.toLowerCase();
                 const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
                 
+                // Security: Disable SVG upload to prevent XSS via SVG scripts
+                // SVG files can contain <script> tags and event handlers
                 if (!validTypes.includes(file.type) || !hasValidExtension) {
-                    showToast('Please upload a valid image file (JPEG, PNG, GIF, WebP, or SVG)');
+                    showToast('Please upload a valid image file (JPEG, PNG, GIF, or WebP). SVG files are not supported for security reasons.');
                     logoInput.value = '';
                     return;
                 }
                 
-                // Validate file size (max 5MB)
-                const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                // Validate file size (max 2MB for better security)
+                const maxSize = 2 * 1024 * 1024; // 2MB in bytes
                 if (file.size > maxSize) {
-                    showToast('Image file is too large. Please upload an image smaller than 5MB.');
+                    showToast('Image file is too large. Please upload an image smaller than 2MB.');
                     logoInput.value = '';
                     return;
                 }
@@ -1478,8 +1484,12 @@
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const dataUrl = event.target.result;
-                    // Validate the data URL format
-                    if (typeof dataUrl === 'string' && dataUrl.startsWith('data:image/')) {
+                    // Validate the data URL format - must be a proper image data URL
+                    // Block all SVG variants (data:image/svg and data:image/svg+xml) as they can contain scripts
+                    if (typeof dataUrl === 'string' && 
+                        dataUrl.startsWith('data:image/') && 
+                        !dataUrl.startsWith('data:image/svg+xml') &&
+                        !dataUrl.startsWith('data:image/svg')) {
                         logoDataUrl = dataUrl;
                         logoImage.src = logoDataUrl;
                         logoPreview.style.display = 'block';
@@ -1544,17 +1554,44 @@
             return '';
         }
 
+        /**
+         * Sanitizes color values to prevent CSS injection attacks.
+         * Only allows valid hex color format (#RGB or #RRGGBB).
+         * @param {string} color - The color value to sanitize
+         * @returns {string} - The sanitized color or #000000 if invalid
+         */
+        function sanitizeCSSColor(color) {
+            if (!color || typeof color !== 'string') return '#000000';
+            
+            // Remove any whitespace
+            color = color.trim();
+            
+            // Only allow valid hex color format: #RGB (3 digits) or #RRGGBB (6 digits)
+            // This prevents CSS injection via color values
+            if (/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(color)) {
+                return color;
+            }
+            
+            // Fallback to black if invalid
+            return '#000000';
+        }
+
         function prepareSignatureData(data) {
             const { name, title, company, email, phone, bookMe, address, disclaimer } = data;
             
+            // Sanitize all brand colors to prevent injection attacks
+            const safeAccentColor = sanitizeCSSColor(currentBrand.accentColor);
+            const safeTextColor = sanitizeCSSColor(currentBrand.textColor);
+            const safeMutedColor = sanitizeCSSColor(currentBrand.mutedColor);
+            
             const logoSVG = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="40" height="40" rx="8" fill="${currentBrand.accentColor}"/>
+                <rect width="40" height="40" rx="8" fill="${safeAccentColor}"/>
                 <path d="M20 12L28 20L20 28L12 20L20 12Z" fill="white" opacity="0.9"/>
                 <circle cx="20" cy="20" r="4" fill="white"/>
             </svg>`;
 
             const logoHTML = logoDataUrl && typeof logoDataUrl === 'string' && logoDataUrl.startsWith('data:image/')
-                ? `<img src="${logoDataUrl}" alt="Logo" style="width: 40px; height: 40px; display: block; border-radius: 8px;">`
+                ? `<img src="${escapeAttribute(logoDataUrl)}" alt="Logo" style="width: 40px; height: 40px; display: block; border-radius: 8px;">`
                 : logoSVG;
 
             const escapedName = escapeHtml(name);
@@ -1572,19 +1609,22 @@
             const contactParts = [];
             if (email) {
                 const escapedEmailHref = escapeAttribute(email);
-                contactParts.push(`<a href="mailto:${escapedEmailHref}" style="color: ${currentBrand.accentColor}; text-decoration: none;">${emailIcon}${escapedEmail}</a>`);
+                contactParts.push(`<a href="mailto:${escapedEmailHref}" style="color: ${safeAccentColor}; text-decoration: none;">${emailIcon}${escapedEmail}</a>`);
             }
             if (escapedPhone) contactParts.push(`${phoneIcon}${escapedPhone}`);
             if (bookMe) {
                 const sanitizedUrl = sanitizeUrl(bookMe);
                 if (sanitizedUrl) {
                     const escapedUrl = escapeAttribute(sanitizedUrl);
-                    contactParts.push(`<a href="${escapedUrl}" style="color: ${currentBrand.accentColor}; text-decoration: none;">Book a Meeting</a>`);
+                    contactParts.push(`<a href="${escapedUrl}" style="color: ${safeAccentColor}; text-decoration: none;">Book a Meeting</a>`);
                 }
             }
             const contactLine = contactParts.join(' • ');
 
-            return { escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer };
+            return { 
+                escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer,
+                safeAccentColor, safeTextColor, safeMutedColor
+            };
         }
 
         function getInputData() {
@@ -1604,7 +1644,8 @@
             const { name, title, company, email, phone, bookMe, address, disclaimer } = data;
             
             if (!name && !title && !company && !email && !phone && !bookMe && !address && !disclaimer) {
-                return `<p style="color: ${currentBrand.mutedColor}; font-style: italic;">Enter your details to see a preview</p>`;
+                const safeMutedColor = sanitizeCSSColor(currentBrand.mutedColor);
+                return `<p style="color: ${safeMutedColor}; font-style: italic;">Enter your details to see a preview</p>`;
             }
 
             if (currentPreviewMode === 'plaintext') {
@@ -1645,12 +1686,12 @@
             return text || 'Enter your details to see a preview';
         }
 
-        function generateStandardSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
+        function generateStandardSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer, safeTextColor, safeMutedColor }) {
             if (currentLayout === 'horizontal') {
-                return generateStandardSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer });
+                return generateStandardSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer, safeTextColor, safeMutedColor });
             }
             return `
-                <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: ${currentFontSize}px; line-height: 1.5; color: ${currentBrand.textColor};">
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: ${currentFontSize}px; line-height: 1.5; color: ${safeTextColor};">
                     <tr>
                         <td style="padding-bottom: 12px;">
                             <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
@@ -1660,42 +1701,42 @@
                     </tr>
                     ${escapedName ? `
                     <tr>
-                        <td style="font-weight: 600; font-size: ${currentFontSize + 2}px; padding-bottom: 2px; color: ${currentBrand.textColor};">
+                        <td style="font-weight: 600; font-size: ${currentFontSize + 2}px; padding-bottom: 2px; color: ${safeTextColor};">
                             ${escapedName}
                         </td>
                     </tr>
                     ` : ''}
                     ${escapedTitle ? `
                     <tr>
-                        <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
+                        <td style="color: ${safeMutedColor}; padding-bottom: 2px;">
                             ${escapedTitle}
                         </td>
                     </tr>
                     ` : ''}
                     ${escapedCompany ? `
                     <tr>
-                        <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
+                        <td style="color: ${safeMutedColor}; padding-bottom: 2px;">
                             ${escapedCompany}
                         </td>
                     </tr>
                     ` : ''}
                     ${escapedAddress ? `
                     <tr>
-                        <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
+                        <td style="color: ${safeMutedColor}; padding-bottom: 2px;">
                             ${escapedAddress}
                         </td>
                     </tr>
                     ` : ''}
                     ${contactLine ? `
                     <tr>
-                        <td style="color: ${currentBrand.mutedColor}; padding-top: 8px;">
+                        <td style="color: ${safeMutedColor}; padding-top: 8px;">
                             ${contactLine}
                         </td>
                     </tr>
                     ` : ''}
                     ${escapedDisclaimer ? `
                     <tr>
-                        <td style="color: ${currentBrand.mutedColor}; padding-top: 12px; font-size: ${currentFontSize - 2}px; font-style: italic; border-top: 1px solid ${currentBrand.mutedColor}; padding-top: 8px; margin-top: 8px;">
+                        <td style="color: ${safeMutedColor}; padding-top: 12px; font-size: ${currentFontSize - 2}px; font-style: italic; border-top: 1px solid ${safeMutedColor}; padding-top: 8px; margin-top: 8px;">
                             ${escapedDisclaimer}
                         </td>
                     </tr>
@@ -1704,9 +1745,9 @@
             `;
         }
 
-        function generateStandardSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
+        function generateStandardSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer, safeTextColor, safeMutedColor }) {
             return `
-                <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: ${currentFontSize}px; line-height: 1.5; color: ${currentBrand.textColor};">
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: ${currentFontSize}px; line-height: 1.5; color: ${safeTextColor};">
                     <tr>
                         <td style="padding-right: 16px; vertical-align: top;">
                             <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
@@ -1717,42 +1758,42 @@
                             <table cellpadding="0" cellspacing="0" border="0;">
                                 ${escapedName ? `
                                 <tr>
-                                    <td style="font-weight: 600; font-size: ${currentFontSize + 2}px; padding-bottom: 2px; color: ${currentBrand.textColor};">
+                                    <td style="font-weight: 600; font-size: ${currentFontSize + 2}px; padding-bottom: 2px; color: ${safeTextColor};">
                                         ${escapedName}
                                     </td>
                                 </tr>
                                 ` : ''}
                                 ${escapedTitle ? `
                                 <tr>
-                                    <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
+                                    <td style="color: ${safeMutedColor}; padding-bottom: 2px;">
                                         ${escapedTitle}
                                     </td>
                                 </tr>
                                 ` : ''}
                                 ${escapedCompany ? `
                                 <tr>
-                                    <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
+                                    <td style="color: ${safeMutedColor}; padding-bottom: 2px;">
                                         ${escapedCompany}
                                     </td>
                                 </tr>
                                 ` : ''}
                                 ${escapedAddress ? `
                                 <tr>
-                                    <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
+                                    <td style="color: ${safeMutedColor}; padding-bottom: 2px;">
                                         ${escapedAddress}
                                     </td>
                                 </tr>
                                 ` : ''}
                                 ${contactLine ? `
                                 <tr>
-                                    <td style="color: ${currentBrand.mutedColor}; padding-top: 8px;">
+                                    <td style="color: ${safeMutedColor}; padding-top: 8px;">
                                         ${contactLine}
                                     </td>
                                 </tr>
                                 ` : ''}
                                 ${escapedDisclaimer ? `
                                 <tr>
-                                    <td style="color: ${currentBrand.mutedColor}; padding-top: 12px; font-size: ${currentFontSize - 2}px; font-style: italic;">
+                                    <td style="color: ${safeMutedColor}; padding-top: 12px; font-size: ${currentFontSize - 2}px; font-style: italic;">
                                         ${escapedDisclaimer}
                                     </td>
                                 </tr>
@@ -1764,9 +1805,9 @@
             `;
         }
 
-        function generateGmailSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
+        function generateGmailSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer, safeTextColor, safeMutedColor }) {
             if (currentLayout === 'horizontal') {
-                return generateGmailSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer });
+                return generateGmailSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer, safeTextColor, safeMutedColor });
             }
             // Gmail uses Arial and has specific rendering characteristics
             const baseFontSize = Math.max(11, currentFontSize - 1);
@@ -1825,7 +1866,7 @@
             `;
         }
 
-        function generateGmailSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
+        function generateGmailSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer, safeTextColor, safeMutedColor }) {
             const baseFontSize = Math.max(11, currentFontSize - 1);
             return `
                 <table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; font-size: ${baseFontSize}px; line-height: 1.4; color: #000000;">
@@ -1886,9 +1927,9 @@
             `;
         }
 
-        function generateOutlookSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
+        function generateOutlookSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer, safeTextColor, safeMutedColor }) {
             if (currentLayout === 'horizontal') {
-                return generateOutlookSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer });
+                return generateOutlookSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer, safeTextColor, safeMutedColor });
             }
             // Outlook uses Calibri/Segoe UI and has different rendering
             const baseFontSize = Math.max(10, currentFontSize - 3);
@@ -1947,7 +1988,7 @@
             `;
         }
 
-        function generateOutlookSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
+        function generateOutlookSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer, safeTextColor, safeMutedColor }) {
             const baseFontSize = Math.max(10, currentFontSize - 3);
             return `
                 <table cellpadding="0" cellspacing="0" border="0" style="font-family: 'Segoe UI', Tahoma, sans-serif; font-size: ${baseFontSize}pt; line-height: 1.35; color: #000000;">
@@ -2139,7 +2180,7 @@ ${signatureHTML}
             const subject = 'Email Signature Test';
             const body = `Here is your new email signature:\n\n${signatureHTML}`;
             
-            // Create mailto link with the signature
+            // Create mailto link with properly encoded parameters to prevent injection
             const mailtoLink = `mailto:${encodeURIComponent(data.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             
             try {
@@ -2197,7 +2238,8 @@ ${signatureHTML}
             }
             inputs.brand.value = brandKey;
             currentBrand = brandPresets[brandKey];
-            brandColorDot.style.backgroundColor = currentBrand.accentColor;
+            const safeColor = sanitizeCSSColor(currentBrand.accentColor);
+            brandColorDot.style.backgroundColor = safeColor;
             brandColorName.textContent = `${currentBrand.name} (${currentBrand.accentColor})`;
             updatePreview();
         }
@@ -2280,9 +2322,12 @@ ${signatureHTML}
                 }
                 
                 // Load logo with enhanced validation
+                // Block all SVG variants (data:image/svg and data:image/svg+xml) for security
                 if (data.logoDataUrl && typeof data.logoDataUrl === 'string' && 
                     data.logoDataUrl.startsWith('data:image/') && 
-                    data.logoDataUrl.length < 5 * 1024 * 1024) { // Max 5MB
+                    !data.logoDataUrl.startsWith('data:image/svg+xml') &&
+                    !data.logoDataUrl.startsWith('data:image/svg') &&
+                    data.logoDataUrl.length < 2 * 1024 * 1024) { // Max 2MB
                     logoDataUrl = data.logoDataUrl;
                     logoImage.src = logoDataUrl;
                     logoPreview.style.display = 'block';
@@ -2384,7 +2429,7 @@ ${signatureHTML}
         });
 
         // Initialize
-        brandColorDot.style.backgroundColor = currentBrand.accentColor;
+        brandColorDot.style.backgroundColor = sanitizeCSSColor(currentBrand.accentColor);
         updatePreview();
         
         // Initialize history with current state
