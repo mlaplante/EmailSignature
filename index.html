@@ -1485,9 +1485,10 @@
                 reader.onload = (event) => {
                     const dataUrl = event.target.result;
                     // Validate the data URL format - must be a proper image data URL
-                    // Ensure it doesn't contain SVG which could have scripts
+                    // Block all SVG variants (data:image/svg and data:image/svg+xml) as they can contain scripts
                     if (typeof dataUrl === 'string' && 
                         dataUrl.startsWith('data:image/') && 
+                        !dataUrl.startsWith('data:image/svg+xml') &&
                         !dataUrl.startsWith('data:image/svg')) {
                         logoDataUrl = dataUrl;
                         logoImage.src = logoDataUrl;
@@ -1565,9 +1566,9 @@
             // Remove any whitespace
             color = color.trim();
             
-            // Only allow valid hex color format (#RGB or #RRGGBB)
+            // Only allow valid hex color format: #RGB (3 digits) or #RRGGBB (6 digits)
             // This prevents CSS injection via color values
-            if (/^#([0-9A-Fa-f]{3}){1,2}$/.test(color)) {
+            if (/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(color)) {
                 return color;
             }
             
@@ -2321,9 +2322,10 @@ ${signatureHTML}
                 }
                 
                 // Load logo with enhanced validation
-                // Exclude SVG data URLs for security (SVG can contain scripts)
+                // Block all SVG variants (data:image/svg and data:image/svg+xml) for security
                 if (data.logoDataUrl && typeof data.logoDataUrl === 'string' && 
                     data.logoDataUrl.startsWith('data:image/') && 
+                    !data.logoDataUrl.startsWith('data:image/svg+xml') &&
                     !data.logoDataUrl.startsWith('data:image/svg') &&
                     data.logoDataUrl.length < 2 * 1024 * 1024) { // Max 2MB
                     logoDataUrl = data.logoDataUrl;
