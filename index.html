@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
     <title>Email Signature Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -1649,7 +1650,8 @@
             const { name, title, company, email, phone, bookMe, address, disclaimer } = data;
             
             if (!name && !title && !company && !email && !phone && !bookMe && !address && !disclaimer) {
-                return `<p style="color: ${currentBrand.mutedColor}; font-style: italic;">Enter your details to see a preview</p>`;
+                const safeMutedColor = sanitizeCSSColor(currentBrand.mutedColor);
+                return `<p style="color: ${safeMutedColor}; font-style: italic;">Enter your details to see a preview</p>`;
             }
 
             if (currentPreviewMode === 'plaintext') {
@@ -2184,8 +2186,14 @@ ${signatureHTML}
             const subject = 'Email Signature Test';
             const body = `Here is your new email signature:\n\n${signatureHTML}`;
             
-            // Create mailto link with the signature
+            // Create mailto link with the signature (properly encoded to prevent injection)
             const mailtoLink = `mailto:${encodeURIComponent(data.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            // Validate that the link starts with mailto: to prevent protocol injection
+            if (!mailtoLink.startsWith('mailto:')) {
+                showToast('Invalid email format. Please try again.');
+                return;
+            }
             
             try {
                 window.location.href = mailtoLink;
