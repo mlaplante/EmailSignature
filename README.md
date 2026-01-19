@@ -187,3 +187,13 @@ This project is open source and available for personal and commercial use.
 ## Contributing
 
 Contributions are welcome! Feel free to submit issues or pull requests to improve the email signature generator.
+
+### Pull Request Previews
+
+When you submit a pull request, a preview of your changes will be automatically deployed to GitHub Pages. The preview URL will be posted as a comment on your PR and will be available at:
+
+```
+https://mlaplante.github.io/EmailSignature/pr-preview/pr-<number>/
+```
+
+Where `<number>` is your PR number. This allows reviewers to see and test your changes before merging. The preview is automatically removed when the PR is closed or merged.
