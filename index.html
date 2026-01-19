@@ -1590,13 +1590,25 @@
         }
 
         function isFormEmpty() {
-            return !inputs.name.value && 
+            const isDefaultBrand = inputs.brand.value === 'default';
+            return isDefaultBrand &&
+                   !inputs.name.value && 
                    !inputs.title.value && 
                    !inputs.company.value && 
                    !inputs.email.value && 
                    !inputs.phone.value && 
                    !inputs.bookMe.value &&
                    !logoDataUrl;
+        }
+
+        function setBrand(brandKey) {
+            if (!brandPresets[brandKey]) {
+                brandKey = 'default';
+            }
+            inputs.brand.value = brandKey;
+            currentBrand = brandPresets[brandKey];
+            brandColorDot.style.backgroundColor = currentBrand.accentColor;
+            brandColorName.textContent = `${currentBrand.name} (${currentBrand.accentColor})`;
         }
 
         function saveSignatureData() {
@@ -1623,13 +1635,12 @@
                 
                 const data = JSON.parse(savedData);
                 
-                // Load form values
-                if (data.brand && brandPresets[data.brand]) {
-                    inputs.brand.value = data.brand;
-                    currentBrand = brandPresets[data.brand];
-                    brandColorDot.style.backgroundColor = currentBrand.accentColor;
-                    brandColorName.textContent = `${currentBrand.name} (${currentBrand.accentColor})`;
+                // Load brand
+                if (data.brand) {
+                    setBrand(data.brand);
                 }
+                
+                // Load form values
                 if (data.name !== undefined) inputs.name.value = data.name;
                 if (data.title !== undefined) inputs.title.value = data.title;
                 if (data.company !== undefined) inputs.company.value = data.company;
@@ -1685,12 +1696,10 @@
             try {
                 localStorage.removeItem(STORAGE_KEY);
                 
-                // Clear all inputs
-                inputs.brand.value = 'default';
-                currentBrand = brandPresets['default'];
-                brandColorDot.style.backgroundColor = currentBrand.accentColor;
-                brandColorName.textContent = `${currentBrand.name} (${currentBrand.accentColor})`;
+                // Clear brand
+                setBrand('default');
                 
+                // Clear all inputs
                 Object.entries(inputs).forEach(([key, input]) => {
                     if (input.tagName === 'INPUT' && input.type !== 'file') {
                         input.value = '';
