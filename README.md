@@ -19,6 +19,7 @@ The Email Signature Generator is a web-based application that helps you create b
 - **Dark/Light Theme**: Toggle between dark and light themes for comfortable viewing
 - **Multiple Fields**: Include your name, job title, company name (optional), email address, phone number, and an optional booking link
 - **Custom Logo Upload**: Upload your own logo image to personalize your signature
+- **Save/Load Functionality**: Automatically saves your signature data to your browser's local storage so you can return later and continue where you left off
 - **One-Click Copy**: Copy your signature to clipboard with a single click
 - **Export Guides**: Built-in instructions for importing signatures into common email clients:
   - Gmail
@@ -50,8 +51,22 @@ The Email Signature Generator is a web-based application that helps you create b
    - **Gmail**: How your signature will appear in Gmail with Arial font and Gmail-specific styling
    - **Outlook**: How your signature will appear in Outlook with Segoe UI font and Outlook-specific styling
 6. Watch your signature preview update in real-time with your selected brand colors
-7. Click "Copy Signature" to copy the formatted signature to your clipboard in your selected layout
-8. Click "How to Import?" to see instructions for your email client
+7. Your signature data is automatically saved to your browser's local storage as you type
+8. Click "Copy Signature" to copy the formatted signature to your clipboard in your selected layout
+9. Click "How to Import?" to see instructions for your email client
+10. When you return to the page, your saved signature data will be automatically loaded
+
+### Save/Load Features
+
+The application includes automatic and manual save/load functionality:
+
+- **Auto-save**: Your signature data is automatically saved to browser local storage as you type
+- **Auto-load**: When you return to the page, your saved signature data is automatically loaded
+- **Manual Save**: Click "Save Signature" to manually save your current signature data
+- **Load Saved**: Click "Load Saved" to manually load your previously saved signature data
+- **Clear Saved**: Click "Clear Saved" to remove all saved signature data from local storage
+
+All saved data is stored locally in your browser and is never sent to any server, ensuring your privacy.
 
 ### Importing to Email Clients
 
