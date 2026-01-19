@@ -1763,71 +1763,6 @@
                 </table>
             `;
         }
-                    </tr>
-                    ` : ''}
-                    ${escapedCompany ? `
-                    <tr>
-                        <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
-                            ${escapedCompany}
-                        </td>
-                    </tr>
-                    ` : ''}
-                    ${contactLine ? `
-                    <tr>
-                        <td style="color: ${currentBrand.mutedColor}; padding-top: 8px;">
-                            ${contactLine}
-                        </td>
-                    </tr>
-                    ` : ''}
-                </table>
-            `;
-        }
-
-        function generateStandardSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML }) {
-            return `
-                <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 1.5; color: ${currentBrand.textColor};">
-                    <tr>
-                        <td style="padding-right: 16px; vertical-align: top;">
-                            <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
-                                ${logoHTML}
-                            </a>
-                        </td>
-                        <td style="vertical-align: top;">
-                            <table cellpadding="0" cellspacing="0" border="0">
-                                ${escapedName ? `
-                                <tr>
-                                    <td style="font-weight: 600; font-size: 16px; padding-bottom: 2px; color: ${currentBrand.textColor};">
-                                        ${escapedName}
-                                    </td>
-                                </tr>
-                                ` : ''}
-                                ${escapedTitle ? `
-                                <tr>
-                                    <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
-                                        ${escapedTitle}
-                                    </td>
-                                </tr>
-                                ` : ''}
-                                ${escapedCompany ? `
-                                <tr>
-                                    <td style="color: ${currentBrand.mutedColor}; padding-bottom: 2px;">
-                                        ${escapedCompany}
-                                    </td>
-                                </tr>
-                                ` : ''}
-                                ${contactLine ? `
-                                <tr>
-                                    <td style="color: ${currentBrand.mutedColor}; padding-top: 8px;">
-                                        ${contactLine}
-                                    </td>
-                                </tr>
-                                ` : ''}
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-            `;
-        }
 
         function generateGmailSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML, escapedAddress, escapedDisclaimer }) {
             if (currentLayout === 'horizontal') {
@@ -2063,50 +1998,6 @@
                                 <tr>
                                     <td style="color: #666666; padding-top: 10px; font-size: ${baseFontSize - 1}pt; font-style: italic;">
                                         ${escapedDisclaimer}
-                                    </td>
-                                </tr>
-                                ` : ''}
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-            `;
-        }
-            return `
-                <table cellpadding="0" cellspacing="0" border="0" style="font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11pt; line-height: 1.35; color: #000000;">
-                    <tr>
-                        <td style="padding-right: 14px; vertical-align: top;">
-                            <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
-                                ${logoHTML}
-                            </a>
-                        </td>
-                        <td style="vertical-align: top;">
-                            <table cellpadding="0" cellspacing="0" border="0">
-                                ${escapedName ? `
-                                <tr>
-                                    <td style="font-weight: 600; font-size: 12pt; padding-bottom: 3px; color: #0078d4;">
-                                        ${escapedName}
-                                    </td>
-                                </tr>
-                                ` : ''}
-                                ${escapedTitle ? `
-                                <tr>
-                                    <td style="color: #666666; padding-bottom: 3px; font-size: 10pt;">
-                                        ${escapedTitle}
-                                    </td>
-                                </tr>
-                                ` : ''}
-                                ${escapedCompany ? `
-                                <tr>
-                                    <td style="color: #666666; padding-bottom: 3px; font-size: 10pt;">
-                                        ${escapedCompany}
-                                    </td>
-                                </tr>
-                                ` : ''}
-                                ${contactLine ? `
-                                <tr>
-                                    <td style="color: #666666; padding-top: 6px; font-size: 10pt;">
-                                        ${contactLine}
                                     </td>
                                 </tr>
                                 ` : ''}
