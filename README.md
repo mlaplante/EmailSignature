@@ -196,4 +196,13 @@ When you submit a pull request, a preview of your changes will be automatically 
 https://mlaplante.github.io/EmailSignature/pr-preview/pr-<number>/
 ```
 
-Where `<number>` is your PR number. This allows reviewers to see and test your changes before merging. The preview is automatically removed when the PR is closed or merged.
+Where `<number>` is your PR number. This allows reviewers to see and test your changes before merging.
+
+#### Preview Cleanup
+
+Stale PR preview folders are automatically cleaned up using a GitHub Actions workflow that:
+- Runs daily at 2 AM UTC
+- Runs automatically when PRs are closed
+- Can be triggered manually from the Actions tab
+
+The cleanup workflow compares all folders in `pr-preview/` against open PRs and removes folders for closed/merged PRs. This ensures the main branch stays clean and the repository size stays manageable.
