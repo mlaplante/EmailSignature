@@ -1,0 +1,85 @@
+name: Cleanup PR Previews
+
+on:
+  # Run manually from Actions tab
+  workflow_dispatch:
+  # Run daily at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * *'
+  # Run when a PR is closed
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Cleanup stale preview folders
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "🔍 Checking for stale PR preview folders..."
+          
+          # Exit if pr-preview directory doesn't exist
+          if [ ! -d "pr-preview" ]; then
+            echo "✅ No pr-preview directory found, nothing to clean up"
+            exit 0
+          fi
+          
+          # Get list of all PR preview folders using shell globbing
+          cd pr-preview
+          shopt -s nullglob
+          preview_folders=(pr-*)
+          
+          if [ ${#preview_folders[@]} -eq 0 ]; then
+            echo "✅ No preview folders found"
+            exit 0
+          fi
+          
+          echo "📁 Found preview folders: ${preview_folders[*]}"
+          
+          # Get list of open PR numbers
+          open_prs=$(gh pr list --state open --json number --jq '.[].number' | tr '\n' ' ')
+          echo "🔓 Open PRs: $open_prs"
+          
+          # Track if we made any changes
+          changes_made=false
+          
+          # Check each preview folder
+          for folder in "${preview_folders[@]}"; do
+            # Extract PR number from folder name (pr-14 -> 14)
+            pr_num=${folder#pr-}
+            
+            # Check if this PR is still open
+            # Handle empty open_prs case by checking if variable is not empty first
+            if [ -n "$open_prs" ] && echo "$open_prs" | grep -qw "$pr_num"; then
+              echo "⏭️  Keeping $folder (PR #$pr_num is still open)"
+            else
+              echo "🗑️  Removing $folder (PR #$pr_num is closed)"
+              rm -rf "$folder"
+              changes_made=true
+            fi
+          done
+          
+          cd ..
+          
+          # Commit and push if we made changes
+          if [ "$changes_made" = true ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add pr-preview
+            git commit -m "chore: cleanup stale PR preview folders"
+            git push
+            echo "✅ Cleaned up stale preview folders and pushed changes"
+          else
+            echo "✅ No stale preview folders to clean up"
+          fi
