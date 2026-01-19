@@ -1609,6 +1609,7 @@
             currentBrand = brandPresets[brandKey];
             brandColorDot.style.backgroundColor = currentBrand.accentColor;
             brandColorName.textContent = `${currentBrand.name} (${currentBrand.accentColor})`;
+            updatePreview();
         }
 
         function saveSignatureData() {
