@@ -804,6 +804,7 @@
             </div>
             <div class="button-group">
                 <button class="btn-primary" id="copyBtn">Copy Signature</button>
+                <button class="btn-secondary" id="exportBtn">Export HTML</button>
                 <button class="btn-secondary" id="howToBtn">How to Import?</button>
             </div>
             <div class="button-group button-group-secondary">
@@ -829,7 +830,7 @@
             <button class="modal-close" id="modalClose">&times;</button>
             <h2>How to Import Your Signature</h2>
             
-            <p>Use the preview tabs above to see how your signature will look in different email clients. The copied signature will work in all email clients.</p>
+            <p>You can use either the <strong>Copy Signature</strong> button to copy to your clipboard, or the <strong>Export HTML</strong> button to download an HTML file. Both methods will work in all modern email clients.</p>
             
             <h3>Gmail</h3>
             <ol>
@@ -1552,6 +1553,52 @@
             }
         }
 
+        function exportSignatureHTML() {
+            const data = getInputData();
+            
+            // Validate that there's some data to export
+            if (!data.name && !data.title && !data.company && !data.email && !data.phone && !data.bookMe) {
+                showToast('Please enter your signature details before exporting.');
+                return;
+            }
+            
+            const signatureData = prepareSignatureData(data);
+
+            // Generate HTML using the currently selected layout
+            let signatureHTML;
+            if (currentLayout === 'horizontal') {
+                signatureHTML = generateStandardSignatureHorizontal(signatureData);
+            } else {
+                signatureHTML = generateStandardSignature(signatureData);
+            }
+
+            // Create a complete HTML document that will work in email clients
+            const fullHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Signature</title>
+</head>
+<body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+${signatureHTML}
+</body>
+</html>`;
+
+            // Create a blob and download it
+            const blob = new Blob([fullHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'email-signature.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast('Signature HTML exported successfully!');
+        }
+
         function showToast(message = 'Signature copied to clipboard!') {
             toast.textContent = message;
             toast.classList.add('show');
@@ -1561,6 +1608,8 @@
         }
 
         copyBtn.addEventListener('click', copySignature);
+        const exportBtn = document.getElementById('exportBtn');
+        exportBtn.addEventListener('click', exportSignatureHTML);
         howToBtn.addEventListener('click', () => modal.classList.add('active'));
         modalClose.addEventListener('click', () => modal.classList.remove('active'));
         modal.addEventListener('click', (e) => {
