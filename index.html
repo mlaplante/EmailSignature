@@ -111,6 +111,83 @@
             box-shadow: 0 2px 12px var(--shadow);
         }
 
+        .layout-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .layout-section h3 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .layout-options {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .layout-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .layout-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .layout-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--bg-primary);
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .layout-option input[type="radio"]:checked + label {
+            border-color: var(--accent);
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.1);
+        }
+
+        .layout-option label:hover {
+            border-color: var(--accent);
+        }
+
+        .layout-icon {
+            width: 60px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+
+        .layout-option input[type="radio"]:checked + label .layout-icon {
+            color: var(--accent);
+        }
+
+        .layout-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
         .form-grid {
             display: grid;
             gap: 1.5rem;
@@ -520,6 +597,39 @@
         </header>
 
         <div class="form-section">
+            <div class="layout-section">
+                <h3>Signature Layout</h3>
+                <div class="layout-options">
+                    <div class="layout-option">
+                        <input type="radio" id="layoutVertical" name="layout" value="vertical" checked>
+                        <label for="layoutVertical">
+                            <div class="layout-icon">
+                                <svg width="60" height="40" viewBox="0 0 60 40" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="20" y="5" width="20" height="6" rx="2"/>
+                                    <rect x="15" y="14" width="30" height="4" rx="1"/>
+                                    <rect x="15" y="21" width="30" height="4" rx="1"/>
+                                    <rect x="15" y="28" width="30" height="4" rx="1"/>
+                                </svg>
+                            </div>
+                            <span class="layout-name">Vertical</span>
+                        </label>
+                    </div>
+                    <div class="layout-option">
+                        <input type="radio" id="layoutHorizontal" name="layout" value="horizontal">
+                        <label for="layoutHorizontal">
+                            <div class="layout-icon">
+                                <svg width="60" height="40" viewBox="0 0 60 40" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="5" y="10" width="12" height="20" rx="2"/>
+                                    <rect x="20" y="12" width="35" height="4" rx="1"/>
+                                    <rect x="20" y="19" width="30" height="3" rx="1"/>
+                                    <rect x="20" y="25" width="25" height="3" rx="1"/>
+                                </svg>
+                            </div>
+                            <span class="layout-name">Horizontal</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
             <div class="form-grid">
                 <div class="input-group">
                     <label for="name">Name</label>
@@ -698,7 +808,18 @@
         const clearBtns = document.querySelectorAll('.clear-btn');
         const previewTabs = document.querySelectorAll('.preview-tab');
         let currentPreviewMode = 'standard';
+        
+        // Initialize layout from the checked radio button
+        const layoutRadios = document.querySelectorAll('input[name="layout"]');
+        let currentLayout = document.querySelector('input[name="layout"]:checked')?.value || 'vertical';
 
+        // Layout selection
+        layoutRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                currentLayout = e.target.value;
+                updatePreview();
+            });
+        });
         // Theme toggle
         const sunIcon = document.querySelector('.sun-icon');
         const moonIcon = document.querySelector('.moon-icon');
@@ -909,6 +1030,9 @@
         }
 
         function generateStandardSignature({ escapedName, escapedTitle, contactLine, logoHTML }) {
+            if (currentLayout === 'horizontal') {
+                return generateStandardSignatureHorizontal({ escapedName, escapedTitle, contactLine, logoHTML });
+            }
             return `
                 <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 1.5; color: #2a2520;">
                     <tr>
@@ -943,7 +1067,49 @@
             `;
         }
 
+        function generateStandardSignatureHorizontal({ escapedName, escapedTitle, contactLine, logoHTML }) {
+            return `
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 1.5; color: #2a2520;">
+                    <tr>
+                        <td style="padding-right: 16px; vertical-align: top;">
+                            <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
+                                ${logoHTML}
+                            </a>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <table cellpadding="0" cellspacing="0" border="0">
+                                ${escapedName ? `
+                                <tr>
+                                    <td style="font-weight: 600; font-size: 16px; padding-bottom: 2px;">
+                                        ${escapedName}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedTitle ? `
+                                <tr>
+                                    <td style="color: #7a6f65; padding-bottom: 2px;">
+                                        ${escapedTitle}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${contactLine ? `
+                                <tr>
+                                    <td style="color: #7a6f65; padding-top: 8px;">
+                                        ${contactLine}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            `;
+        }
+
         function generateGmailSignature({ escapedName, escapedTitle, contactLine, logoHTML }) {
+            if (currentLayout === 'horizontal') {
+                return generateGmailSignatureHorizontal({ escapedName, escapedTitle, contactLine, logoHTML });
+            }
             // Gmail uses Arial and has specific rendering characteristics
             return `
                 <table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 1.4; color: #000000;">
@@ -979,7 +1145,49 @@
             `;
         }
 
+        function generateGmailSignatureHorizontal({ escapedName, escapedTitle, contactLine, logoHTML }) {
+            return `
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 1.4; color: #000000;">
+                    <tr>
+                        <td style="padding-right: 14px; vertical-align: top;">
+                            <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
+                                ${logoHTML}
+                            </a>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <table cellpadding="0" cellspacing="0" border="0">
+                                ${escapedName ? `
+                                <tr>
+                                    <td style="font-weight: bold; font-size: 14px; padding-bottom: 4px; color: #000000;">
+                                        ${escapedName}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedTitle ? `
+                                <tr>
+                                    <td style="color: #5f6368; padding-bottom: 4px; font-size: 13px;">
+                                        ${escapedTitle}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${contactLine ? `
+                                <tr>
+                                    <td style="color: #5f6368; padding-top: 6px; font-size: 13px;">
+                                        ${contactLine}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            `;
+        }
+
         function generateOutlookSignature({ escapedName, escapedTitle, contactLine, logoHTML }) {
+            if (currentLayout === 'horizontal') {
+                return generateOutlookSignatureHorizontal({ escapedName, escapedTitle, contactLine, logoHTML });
+            }
             // Outlook uses Calibri/Segoe UI and has different rendering
             return `
                 <table cellpadding="0" cellspacing="0" border="0" style="font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11pt; line-height: 1.35; color: #000000;">
@@ -1015,6 +1223,45 @@
             `;
         }
 
+        function generateOutlookSignatureHorizontal({ escapedName, escapedTitle, contactLine, logoHTML }) {
+            return `
+                <table cellpadding="0" cellspacing="0" border="0" style="font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11pt; line-height: 1.35; color: #000000;">
+                    <tr>
+                        <td style="padding-right: 14px; vertical-align: top;">
+                            <a href="https://yourcompany.com" style="display: inline-block; text-decoration: none;">
+                                ${logoHTML}
+                            </a>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <table cellpadding="0" cellspacing="0" border="0">
+                                ${escapedName ? `
+                                <tr>
+                                    <td style="font-weight: 600; font-size: 12pt; padding-bottom: 3px; color: #0078d4;">
+                                        ${escapedName}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedTitle ? `
+                                <tr>
+                                    <td style="color: #666666; padding-bottom: 3px; font-size: 10pt;">
+                                        ${escapedTitle}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${contactLine ? `
+                                <tr>
+                                    <td style="color: #666666; padding-top: 6px; font-size: 10pt;">
+                                        ${contactLine}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            `;
+        }
+
         function updatePreview() {
             const data = getInputData();
             preview.innerHTML = generateSignatureHTML(data);
@@ -1024,8 +1271,13 @@
             const data = getInputData();
             const signatureData = prepareSignatureData(data);
 
-            // Always copy the standard version for compatibility
-            const html = generateStandardSignature(signatureData);
+            // Copy using the currently selected layout
+            let html;
+            if (currentLayout === 'horizontal') {
+                html = generateStandardSignatureHorizontal(signatureData);
+            } else {
+                html = generateStandardSignature(signatureData);
+            }
 
             try {
                 const type = 'text/html';
