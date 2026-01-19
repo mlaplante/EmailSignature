@@ -656,6 +656,30 @@
                 </div>
 
                 <div class="input-group">
+                    <label for="company">Company Name</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="company" placeholder="Acme Corporation">
+                        <button class="clear-btn" data-input="company">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 4L4 12M4 4l8 8"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-wrapper">
+                        <input type="email" id="email" placeholder="jane.smith@company.com">
+                        <button class="clear-btn" data-input="email">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 4L4 12M4 4l8 8"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
                     <label for="phone">Phone Number</label>
                     <div class="input-wrapper">
                         <input type="tel" id="phone" placeholder="+1 (555) 123-4567">
@@ -786,6 +810,8 @@
         const inputs = {
             name: document.getElementById('name'),
             title: document.getElementById('title'),
+            company: document.getElementById('company'),
+            email: document.getElementById('email'),
             phone: document.getElementById('phone'),
             bookMe: document.getElementById('bookMe')
         };
@@ -971,7 +997,7 @@
         }
 
         function prepareSignatureData(data) {
-            const { name, title, phone, bookMe } = data;
+            const { name, title, company, email, phone, bookMe } = data;
             
             const logoSVG = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="40" height="40" rx="8" fill="#d97757"/>
@@ -985,9 +1011,15 @@
 
             const escapedName = escapeHtml(name);
             const escapedTitle = escapeHtml(title);
+            const escapedCompany = escapeHtml(company);
+            const escapedEmail = escapeHtml(email);
             const escapedPhone = escapeHtml(phone);
 
             const contactParts = [];
+            if (email) {
+                const escapedEmailHref = escapeAttribute(email);
+                contactParts.push(`<a href="mailto:${escapedEmailHref}" style="color: #d97757; text-decoration: none;">${escapedEmail}</a>`);
+            }
             if (escapedPhone) contactParts.push(escapedPhone);
             if (bookMe) {
                 const sanitizedUrl = sanitizeUrl(bookMe);
@@ -998,22 +1030,24 @@
             }
             const contactLine = contactParts.join(' • ');
 
-            return { escapedName, escapedTitle, contactLine, logoHTML };
+            return { escapedName, escapedTitle, escapedCompany, contactLine, logoHTML };
         }
 
         function getInputData() {
             return {
                 name: inputs.name.value.trim(),
                 title: inputs.title.value.trim(),
+                company: inputs.company.value.trim(),
+                email: inputs.email.value.trim(),
                 phone: inputs.phone.value.trim(),
                 bookMe: inputs.bookMe.value.trim()
             };
         }
 
         function generateSignatureHTML(data) {
-            const { name, title, phone, bookMe } = data;
+            const { name, title, company, email, phone, bookMe } = data;
             
-            if (!name && !title && !phone && !bookMe) {
+            if (!name && !title && !company && !email && !phone && !bookMe) {
                 return '<p style="color: #7a6f65; font-style: italic;">Enter your details to see a preview</p>';
             }
 
@@ -1029,9 +1063,9 @@
             }
         }
 
-        function generateStandardSignature({ escapedName, escapedTitle, contactLine, logoHTML }) {
+        function generateStandardSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML }) {
             if (currentLayout === 'horizontal') {
-                return generateStandardSignatureHorizontal({ escapedName, escapedTitle, contactLine, logoHTML });
+                return generateStandardSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML });
             }
             return `
                 <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 1.5; color: #2a2520;">
@@ -1056,6 +1090,13 @@
                         </td>
                     </tr>
                     ` : ''}
+                    ${escapedCompany ? `
+                    <tr>
+                        <td style="color: #7a6f65; padding-bottom: 2px;">
+                            ${escapedCompany}
+                        </td>
+                    </tr>
+                    ` : ''}
                     ${contactLine ? `
                     <tr>
                         <td style="color: #7a6f65; padding-top: 8px;">
@@ -1067,7 +1108,7 @@
             `;
         }
 
-        function generateStandardSignatureHorizontal({ escapedName, escapedTitle, contactLine, logoHTML }) {
+        function generateStandardSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML }) {
             return `
                 <table cellpadding="0" cellspacing="0" border="0" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 1.5; color: #2a2520;">
                     <tr>
@@ -1092,6 +1133,13 @@
                                     </td>
                                 </tr>
                                 ` : ''}
+                                ${escapedCompany ? `
+                                <tr>
+                                    <td style="color: #7a6f65; padding-bottom: 2px;">
+                                        ${escapedCompany}
+                                    </td>
+                                </tr>
+                                ` : ''}
                                 ${contactLine ? `
                                 <tr>
                                     <td style="color: #7a6f65; padding-top: 8px;">
@@ -1106,9 +1154,9 @@
             `;
         }
 
-        function generateGmailSignature({ escapedName, escapedTitle, contactLine, logoHTML }) {
+        function generateGmailSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML }) {
             if (currentLayout === 'horizontal') {
-                return generateGmailSignatureHorizontal({ escapedName, escapedTitle, contactLine, logoHTML });
+                return generateGmailSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML });
             }
             // Gmail uses Arial and has specific rendering characteristics
             return `
@@ -1134,6 +1182,13 @@
                         </td>
                     </tr>
                     ` : ''}
+                    ${escapedCompany ? `
+                    <tr>
+                        <td style="color: #5f6368; padding-bottom: 4px; font-size: 13px;">
+                            ${escapedCompany}
+                        </td>
+                    </tr>
+                    ` : ''}
                     ${contactLine ? `
                     <tr>
                         <td style="color: #5f6368; padding-top: 6px; font-size: 13px;">
@@ -1145,7 +1200,7 @@
             `;
         }
 
-        function generateGmailSignatureHorizontal({ escapedName, escapedTitle, contactLine, logoHTML }) {
+        function generateGmailSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML }) {
             return `
                 <table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 1.4; color: #000000;">
                     <tr>
@@ -1170,6 +1225,13 @@
                                     </td>
                                 </tr>
                                 ` : ''}
+                                ${escapedCompany ? `
+                                <tr>
+                                    <td style="color: #5f6368; padding-bottom: 4px; font-size: 13px;">
+                                        ${escapedCompany}
+                                    </td>
+                                </tr>
+                                ` : ''}
                                 ${contactLine ? `
                                 <tr>
                                     <td style="color: #5f6368; padding-top: 6px; font-size: 13px;">
@@ -1184,9 +1246,9 @@
             `;
         }
 
-        function generateOutlookSignature({ escapedName, escapedTitle, contactLine, logoHTML }) {
+        function generateOutlookSignature({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML }) {
             if (currentLayout === 'horizontal') {
-                return generateOutlookSignatureHorizontal({ escapedName, escapedTitle, contactLine, logoHTML });
+                return generateOutlookSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML });
             }
             // Outlook uses Calibri/Segoe UI and has different rendering
             return `
@@ -1212,6 +1274,13 @@
                         </td>
                     </tr>
                     ` : ''}
+                    ${escapedCompany ? `
+                    <tr>
+                        <td style="color: #666666; padding-bottom: 3px; font-size: 10pt;">
+                            ${escapedCompany}
+                        </td>
+                    </tr>
+                    ` : ''}
                     ${contactLine ? `
                     <tr>
                         <td style="color: #666666; padding-top: 6px; font-size: 10pt;">
@@ -1223,7 +1292,7 @@
             `;
         }
 
-        function generateOutlookSignatureHorizontal({ escapedName, escapedTitle, contactLine, logoHTML }) {
+        function generateOutlookSignatureHorizontal({ escapedName, escapedTitle, escapedCompany, contactLine, logoHTML }) {
             return `
                 <table cellpadding="0" cellspacing="0" border="0" style="font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11pt; line-height: 1.35; color: #000000;">
                     <tr>
@@ -1245,6 +1314,13 @@
                                 <tr>
                                     <td style="color: #666666; padding-bottom: 3px; font-size: 10pt;">
                                         ${escapedTitle}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                ${escapedCompany ? `
+                                <tr>
+                                    <td style="color: #666666; padding-bottom: 3px; font-size: 10pt;">
+                                        ${escapedCompany}
                                     </td>
                                 </tr>
                                 ` : ''}
