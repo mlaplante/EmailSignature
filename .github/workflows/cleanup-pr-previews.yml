@@ -23,10 +23,6 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Setup GitHub CLI
-        run: |
-          type -p gh >/dev/null || echo "GitHub CLI already installed"
-
       - name: Cleanup stale preview folders
         env:
           GH_TOKEN: ${{ github.token }}
@@ -39,16 +35,17 @@ jobs:
             exit 0
           fi
           
-          # Get list of all PR preview folders
+          # Get list of all PR preview folders using shell globbing
           cd pr-preview
-          preview_folders=$(ls -d pr-* 2>/dev/null || true)
+          shopt -s nullglob
+          preview_folders=(pr-*)
           
-          if [ -z "$preview_folders" ]; then
+          if [ ${#preview_folders[@]} -eq 0 ]; then
             echo "✅ No preview folders found"
             exit 0
           fi
           
-          echo "📁 Found preview folders: $preview_folders"
+          echo "📁 Found preview folders: ${preview_folders[*]}"
           
           # Get list of open PR numbers
           open_prs=$(gh pr list --state open --json number --jq '.[].number' | tr '\n' ' ')
@@ -58,12 +55,13 @@ jobs:
           changes_made=false
           
           # Check each preview folder
-          for folder in $preview_folders; do
+          for folder in "${preview_folders[@]}"; do
             # Extract PR number from folder name (pr-14 -> 14)
             pr_num=${folder#pr-}
             
             # Check if this PR is still open
-            if echo "$open_prs" | grep -qw "$pr_num"; then
+            # Handle empty open_prs case by checking if variable is not empty first
+            if [ -n "$open_prs" ] && echo "$open_prs" | grep -qw "$pr_num"; then
               echo "⏭️  Keeping $folder (PR #$pr_num is still open)"
             else
               echo "🗑️  Removing $folder (PR #$pr_num is closed)"
