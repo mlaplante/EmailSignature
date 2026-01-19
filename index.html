@@ -359,6 +359,10 @@
             gap: 1rem;
             margin-top: 1.5rem;
         }
+        
+        .button-group-secondary {
+            margin-top: 1rem;
+        }
 
         button {
             flex: 1;
@@ -802,6 +806,11 @@
                 <button class="btn-primary" id="copyBtn">Copy Signature</button>
                 <button class="btn-secondary" id="howToBtn">How to Import?</button>
             </div>
+            <div class="button-group button-group-secondary">
+                <button class="btn-secondary" id="saveBtn">Save Signature</button>
+                <button class="btn-secondary" id="loadBtn">Load Saved</button>
+                <button class="btn-secondary" id="clearBtn">Clear Saved</button>
+            </div>
         </div>
     </div>
 
@@ -1103,6 +1112,7 @@
                         logoPreview.style.display = 'block';
                         uploadBtn.style.display = 'none';
                         updatePreview();
+                        autoSave();
                     } else {
                         showToast('Failed to process the image. Please try a different file.');
                         logoInput.value = '';
@@ -1122,6 +1132,7 @@
             logoPreview.style.display = 'none';
             uploadBtn.style.display = 'inline-flex';
             updatePreview();
+            autoSave();
         });
 
         function escapeHtml(text) {
@@ -1558,9 +1569,219 @@
             }
         });
 
+        // Save/Load functionality
+        const STORAGE_KEY = 'emailSignatureData';
+        const saveBtn = document.getElementById('saveBtn');
+        const loadBtn = document.getElementById('loadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+
+        function getCurrentSignatureData() {
+            return {
+                brand: inputs.brand.value,
+                name: inputs.name.value,
+                title: inputs.title.value,
+                company: inputs.company.value,
+                email: inputs.email.value,
+                phone: inputs.phone.value,
+                bookMe: inputs.bookMe.value,
+                layout: currentLayout,
+                logoDataUrl: logoDataUrl
+            };
+        }
+
+        function isFormEmpty() {
+            const isDefaultBrand = inputs.brand.value === 'default';
+            return isDefaultBrand &&
+                   !inputs.name.value && 
+                   !inputs.title.value && 
+                   !inputs.company.value && 
+                   !inputs.email.value && 
+                   !inputs.phone.value && 
+                   !inputs.bookMe.value &&
+                   !logoDataUrl;
+        }
+
+        function setBrand(brandKey) {
+            if (!brandPresets[brandKey]) {
+                brandKey = 'default';
+            }
+            inputs.brand.value = brandKey;
+            currentBrand = brandPresets[brandKey];
+            brandColorDot.style.backgroundColor = currentBrand.accentColor;
+            brandColorName.textContent = `${currentBrand.name} (${currentBrand.accentColor})`;
+            updatePreview();
+        }
+
+        function saveSignatureData() {
+            const data = getCurrentSignatureData();
+            
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                showToast('Signature saved successfully!');
+            } catch (e) {
+                showToast('Failed to save signature. Storage may be full.');
+                console.error('Save error:', e);
+            }
+        }
+
+        function loadSignatureData(silent = false) {
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (!savedData) {
+                    if (!silent) {
+                        showToast('No saved signature found.');
+                    }
+                    return false;
+                }
+                
+                const data = JSON.parse(savedData);
+                
+                // Load brand
+                if (data.brand) {
+                    setBrand(data.brand);
+                }
+                
+                // Load form values with basic sanitization
+                if (data.name !== undefined && typeof data.name === 'string') {
+                    inputs.name.value = data.name.substring(0, 100); // Limit length
+                }
+                if (data.title !== undefined && typeof data.title === 'string') {
+                    inputs.title.value = data.title.substring(0, 100);
+                }
+                if (data.company !== undefined && typeof data.company === 'string') {
+                    inputs.company.value = data.company.substring(0, 100);
+                }
+                if (data.email !== undefined && typeof data.email === 'string') {
+                    inputs.email.value = data.email.substring(0, 100);
+                }
+                if (data.phone !== undefined && typeof data.phone === 'string') {
+                    inputs.phone.value = data.phone.substring(0, 50);
+                }
+                if (data.bookMe !== undefined && typeof data.bookMe === 'string') {
+                    inputs.bookMe.value = data.bookMe.substring(0, 200);
+                }
+                
+                // Load layout with validation
+                if (data.layout && (data.layout === 'vertical' || data.layout === 'horizontal')) {
+                    currentLayout = data.layout;
+                    const layoutRadio = document.getElementById(`layout${data.layout.charAt(0).toUpperCase() + data.layout.slice(1)}`);
+                    if (layoutRadio) {
+                        layoutRadio.checked = true;
+                    }
+                }
+                
+                // Load logo with enhanced validation
+                if (data.logoDataUrl && typeof data.logoDataUrl === 'string' && 
+                    data.logoDataUrl.startsWith('data:image/') && 
+                    data.logoDataUrl.length < 5 * 1024 * 1024) { // Max 5MB
+                    logoDataUrl = data.logoDataUrl;
+                    logoImage.src = logoDataUrl;
+                    logoPreview.style.display = 'block';
+                    uploadBtn.style.display = 'none';
+                }
+                
+                // Update clear button visibility
+                Object.entries(inputs).forEach(([key, input]) => {
+                    if (input.tagName === 'INPUT' && input.type !== 'file' && input.value) {
+                        const wrapper = input.closest('.input-wrapper');
+                        if (wrapper) {
+                            const clearBtn = wrapper.querySelector('.clear-btn');
+                            if (clearBtn) {
+                                clearBtn.classList.add('visible');
+                            }
+                        }
+                    }
+                });
+                
+                updatePreview();
+                if (!silent) {
+                    showToast('Signature loaded successfully!');
+                }
+                return true;
+            } catch (e) {
+                if (!silent) {
+                    showToast('Failed to load signature data.');
+                }
+                console.error('Load error:', e);
+                return false;
+            }
+        }
+
+        function clearSignatureData() {
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+                
+                // Clear brand
+                setBrand('default');
+                
+                // Clear all inputs
+                Object.entries(inputs).forEach(([key, input]) => {
+                    if (input.tagName === 'INPUT' && input.type !== 'file') {
+                        input.value = '';
+                        const wrapper = input.closest('.input-wrapper');
+                        if (wrapper) {
+                            const clearBtn = wrapper.querySelector('.clear-btn');
+                            if (clearBtn) {
+                                clearBtn.classList.remove('visible');
+                            }
+                        }
+                    }
+                });
+                
+                // Reset layout
+                currentLayout = 'vertical';
+                const verticalRadio = document.getElementById('layoutVertical');
+                if (verticalRadio) {
+                    verticalRadio.checked = true;
+                }
+                
+                // Clear logo
+                logoDataUrl = null;
+                logoInput.value = '';
+                logoPreview.style.display = 'none';
+                uploadBtn.style.display = 'inline-flex';
+                
+                updatePreview();
+                showToast('Saved signature cleared!');
+            } catch (e) {
+                showToast('Failed to clear signature data.');
+                console.error('Clear error:', e);
+            }
+        }
+
+        function autoSave() {
+            try {
+                const data = getCurrentSignatureData();
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch (e) {
+                console.error('Auto-save error:', e);
+            }
+        }
+
+        // Add event listeners for save/load/clear buttons
+        saveBtn.addEventListener('click', saveSignatureData);
+        loadBtn.addEventListener('click', loadSignatureData);
+        clearBtn.addEventListener('click', clearSignatureData);
+
+        // Add auto-save on input changes
+        Object.entries(inputs).forEach(([key, input]) => {
+            input.addEventListener('input', autoSave);
+            input.addEventListener('change', autoSave);
+        });
+
+        // Auto-save when layout changes
+        layoutRadios.forEach(radio => {
+            radio.addEventListener('change', autoSave);
+        });
+
         // Initialize
         brandColorDot.style.backgroundColor = currentBrand.accentColor;
         updatePreview();
+        
+        // Auto-load saved data on page load only if form is empty
+        if (isFormEmpty()) {
+            loadSignatureData(true); // silent = true to not show toast on initial load
+        }
     </script>
 </body>
 </html>
